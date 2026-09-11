@@ -14,13 +14,16 @@ public class PlatoServicio {
         this.restauranteServicio = restauranteServicio;
     }
 
+    // ==============================================
+    //  CREAR PLATO
+    // ==============================================
     public Plato crearPlato(String nombre, double precio, String descripcion, long idRestaurante) {
         if (nombre == null || nombre.trim().isEmpty() || nombre.length() < 2)
             throw new IllegalArgumentException("El nombre debe tener al menos 2 caracteres");
         if (precio <= 0)
             throw new IllegalArgumentException("El precio debe ser mayor a cero");
         if (descripcion == null || descripcion.trim().isEmpty())
-            throw new IllegalArgumentException("La descripcion es obligatoria");
+            throw new IllegalArgumentException("La descripción es obligatoria");
         
         Restaurante rest = restauranteServicio.buscarPorId(idRestaurante);
         if (rest == null)
@@ -31,26 +34,40 @@ public class PlatoServicio {
         return nuevo;
     }
 
+    // ==============================================
+    //  MODIFICAR PLATO — LO NUEVO
+    // ==============================================
     public Plato modificarPlato(long idPlato, String nuevoNombre, double nuevoPrecio, String nuevaDescripcion) {
+        // 1. Buscar el plato
         Plato plato = buscarPorId(idPlato);
+        
+        // 2. Validar que exista
         if (plato == null)
             throw new IllegalArgumentException("No existe plato con ID: " + idPlato);
 
+        // 3. Validar los nuevos datos
         if (nuevoNombre == null || nuevoNombre.trim().isEmpty() || nuevoNombre.length() < 2)
             throw new IllegalArgumentException("El nombre debe tener al menos 2 caracteres");
         if (nuevoPrecio <= 0)
             throw new IllegalArgumentException("El precio debe ser mayor a cero");
         if (nuevaDescripcion == null || nuevaDescripcion.trim().isEmpty())
-            throw new IllegalArgumentException("La descripcion es obligatoria");
+            throw new IllegalArgumentException("La descripción es obligatoria");
 
+        // 4. Actualizar los datos
         plato.setNombre(nuevoNombre);
         plato.setPrecio(nuevoPrecio);
         plato.setDescripcion(nuevaDescripcion);
+
         return plato;
     }
 
+    // ==============================================
+    //  MÉTODOS AUXILIARES
+    // ==============================================
     public Plato buscarPorId(long id) {
-        for (Plato p : listaPlatos) if (p.getId() == id) return p;
+        for (Plato p : listaPlatos) {
+            if (p.getId() == id) return p;
+        }
         return null;
     }
 
