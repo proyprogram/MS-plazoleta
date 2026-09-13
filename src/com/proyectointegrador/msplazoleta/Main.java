@@ -1,7 +1,7 @@
 package com.proyectointegrador.msplazoleta;
 
 import com.proyectointegrador.msplazoleta.model.Plato;
-import com.proyectointegrador.msplazoleta.model.Restaurante;
+import com.proyectointegrador.msplazoleta.Restaurante;
 import com.proyectointegrador.msplazoleta.service.PlatoServicio;
 import com.proyectointegrador.msplazoleta.service.RestauranteServicio;
 
