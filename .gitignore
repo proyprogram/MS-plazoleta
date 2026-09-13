@@ -1,3 +1,6 @@
+target/
+*.iml
 .idea/
-out/
 *.class
+application.properties
+*.log
