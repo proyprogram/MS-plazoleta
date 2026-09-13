@@ -1,7 +1,7 @@
 package com.proyectointegrador.msplazoleta.service;
 
 import com.proyectointegrador.msplazoleta.model.Plato;
-import com.proyectointegrador.msplazoleta.model.Restaurante;
+import com.proyectointegrador.msplazoleta.Restaurante;
 import java.util.ArrayList;
 import java.util.List;
 
