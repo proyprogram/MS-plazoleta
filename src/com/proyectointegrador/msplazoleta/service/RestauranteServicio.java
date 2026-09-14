@@ -20,13 +20,8 @@ public class RestauranteServicio {
         if (idPropietario <= 0)
             throw new IllegalArgumentException("ID de propietario inválido");
 
-        Restaurante r = new Restaurante();
+        Restaurante r = new Restaurante(nombre, nit, direccion, telefono, "", (int) idPropietario);
         r.setId(siguienteId++);
-        r.setNombre(nombre);
-        r.setNit(nit);
-        r.setDireccion(direccion);
-        r.setTelefono(telefono);
-        r.setIdPropietario(idPropietario);
         lista.add(r);
         return r;
     }
