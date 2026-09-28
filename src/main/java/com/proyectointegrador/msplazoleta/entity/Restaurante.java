@@ -37,9 +37,9 @@ public class Restaurante {
     @Column(nullable = false)
     private String telefono;
 
-    @Column(name = "url_logo")
+    @Column(name = "urllogo")
     private String urlLogo;
 
-    @Column(name = "id_propietario", nullable = false)
+    @Column(name = "idpropietario", nullable = false)
     private Long idPropietario;
 }
