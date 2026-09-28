@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,13 +15,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "restaurante")
+@Table(name = "plato")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Restaurante {
+public class Plato {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,18 +30,22 @@ public class Restaurante {
     @Column(nullable = false)
     private String nombre;
 
-    @Column(nullable = false, unique = true)
-    private String nit;
+    @Column(nullable = false)
+    private Integer precio;
 
     @Column(nullable = false)
-    private String direccion;
+    private String descripcion;
+
+    @Column(name = "url_imagen")
+    private String urlImagen;
 
     @Column(nullable = false)
-    private String telefono;
+    private String categoria;
 
-    @Column(name = "url_logo")
-    private String urlLogo;
+    @ManyToOne
+    @JoinColumn(name = "id_restaurante", nullable = false)
+    private Restaurante restaurante;
 
-    @Column(name = "id_propietario", nullable = false)
-    private Long idPropietario;
+    @Column(nullable = false)
+    private boolean activo;
 }

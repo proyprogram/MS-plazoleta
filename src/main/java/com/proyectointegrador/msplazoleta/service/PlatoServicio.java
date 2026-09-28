@@ -1,80 +1,55 @@
 package com.proyectointegrador.msplazoleta.service;
 
-import com.proyectointegrador.msplazoleta.model.Plato;
-import com.proyectointegrador.msplazoleta.Restaurante;
-import java.util.ArrayList;
+import com.proyectointegrador.msplazoleta.entity.Plato;
+import com.proyectointegrador.msplazoleta.entity.Restaurante;
+import com.proyectointegrador.msplazoleta.repository.PlatoRepository;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 
+@Service
 public class PlatoServicio {
-    private List<Plato> listaPlatos = new ArrayList<>();
-    private long siguienteId = 1;
-    private RestauranteServicio restauranteServicio;
 
-    public PlatoServicio(RestauranteServicio restauranteServicio) {
+    private final PlatoRepository platoRepository;
+    private final RestauranteServicio restauranteServicio;
+
+    public PlatoServicio(PlatoRepository platoRepository, RestauranteServicio restauranteServicio) {
+        this.platoRepository = platoRepository;
         this.restauranteServicio = restauranteServicio;
     }
 
-    public Plato crearPlato(String nombre, int precio, String descripcion, String urlImagen, String categoria, long idRestaurante, long idPropietario) {
-        if (nombre == null || nombre.trim().isEmpty() || nombre.length() < 2)
-            throw new IllegalArgumentException("El nombre debe tener al menos 2 caracteres");
-        if (precio <= 0)
-            throw new IllegalArgumentException("El precio debe ser mayor a cero");
-        if (descripcion == null || descripcion.trim().isEmpty())
-            throw new IllegalArgumentException("La descripción es obligatoria");
-        if (urlImagen == null || urlImagen.trim().isEmpty())
-            throw new IllegalArgumentException("La URL de la imagen es obligatoria");
-        if (categoria == null || categoria.trim().isEmpty())
-            throw new IllegalArgumentException("La categoría es obligatoria");
-
+    public Plato crearPlato(String nombre, Integer precio, String descripcion, String urlImagen, String categoria, Long idRestaurante, Long idPropietario) {
         Restaurante restaurante = restauranteServicio.buscarPorId(idRestaurante);
         if (restaurante == null)
             throw new IllegalArgumentException("El restaurante no existe");
-        if (restaurante.getIdPropietario() != idPropietario)
+        if (!restaurante.getIdPropietario().equals(idPropietario))
             throw new IllegalArgumentException("Solo el propietario del restaurante puede crear platos");
 
-        Plato plato = new Plato();
-        plato.setId(siguienteId++);
-        plato.setNombre(nombre);
-        plato.setPrecio(precio);
-        plato.setDescripcion(descripcion);
-        plato.setUrlImagen(urlImagen);
-        plato.setCategoria(categoria);
-        plato.setIdRestaurante(idRestaurante);
-        listaPlatos.add(plato);
-        return plato;
+        Plato plato = Plato.builder()
+                .nombre(nombre)
+                .precio(precio)
+                .descripcion(descripcion)
+                .urlImagen(urlImagen)
+                .categoria(categoria)
+                .restaurante(restaurante)
+                .activo(true)
+                .build();
+
+        return platoRepository.save(plato);
     }
 
-    public Plato modificarPlato(long idPlato, int nuevoPrecio, String nuevaDescripcion, long idPropietario) {
-        Plato plato = buscarPorId(idPlato);
-        if (plato == null) throw new IllegalArgumentException("El plato no existe");
-        if (!plato.isActivo()) throw new IllegalArgumentException("No se puede modificar un plato inactivo");
+    public Plato cambiarEstado(Long idPlato, Long idPropietario, boolean nuevoEstado) {
+        Plato plato = platoRepository.findById(idPlato)
+                .orElseThrow(() -> new IllegalArgumentException("El plato no existe"));
 
-        Restaurante restaurante = restauranteServicio.buscarPorId(plato.getIdRestaurante());
-        if (restaurante == null) throw new IllegalArgumentException("El restaurante del plato no existe");
-        if (restaurante.getIdPropietario() != idPropietario)
-            throw new IllegalArgumentException("Solo el propietario del restaurante puede modificar platos");
+        if (!plato.getRestaurante().getIdPropietario().equals(idPropietario))
+            throw new IllegalArgumentException("Solo el propietario del restaurante puede habilitar o deshabilitar este plato");
 
-        if (nuevoPrecio <= 0) throw new IllegalArgumentException("El precio debe ser mayor a cero");
-        if (nuevaDescripcion == null || nuevaDescripcion.trim().isEmpty())
-            throw new IllegalArgumentException("La descripción es obligatoria");
-
-        plato.setPrecio(nuevoPrecio);
-        plato.setDescripcion(nuevaDescripcion);
-        return plato;
-    }
-
-    public Plato buscarPorId(long id) {
-        for (Plato p : listaPlatos) {
-            if (p.getId() == id && p.isActivo()) return p;
-        }
-        return null;
+        plato.setActivo(nuevoEstado);
+        return platoRepository.save(plato);
     }
 
     public List<Plato> listarTodos() {
-        List<Plato> activos = new ArrayList<>();
-        for (Plato p : listaPlatos) {
-            if (p.isActivo()) activos.add(p);
-        }
-        return activos;
+        return platoRepository.findAll();
     }
 }
