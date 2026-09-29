@@ -3,32 +3,35 @@ package com.proyectointegrador.msplazoleta.pedido.entity;
 import com.proyectointegrador.msplazoleta.pedido.enums.EstadoPedido;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "pedidos")
+@Table(name = "pedido")
 public class Pedido {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "id_cliente", nullable = false)
     private Long idCliente;
 
-    @Column(nullable = false)
+    @Column(name = "id_restaurante", nullable = false)
     private Long idRestaurante;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private EstadoPedido estado;
 
     @Column(nullable = false)
     private LocalDateTime fecha;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private EstadoPedido estado;
-
     @Column(nullable = false)
     private Double total;
 
-    public Pedido() {}
+    @Transient
+    private List<DetallePedido> detalles = new ArrayList<>();
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -39,12 +42,15 @@ public class Pedido {
     public Long getIdRestaurante() { return idRestaurante; }
     public void setIdRestaurante(Long idRestaurante) { this.idRestaurante = idRestaurante; }
 
-    public LocalDateTime getFecha() { return fecha; }
-    public void setFecha(LocalDateTime fecha) { this.fecha = fecha; }
-
     public EstadoPedido getEstado() { return estado; }
     public void setEstado(EstadoPedido estado) { this.estado = estado; }
 
+    public LocalDateTime getFecha() { return fecha; }
+    public void setFecha(LocalDateTime fecha) { this.fecha = fecha; }
+
     public Double getTotal() { return total; }
     public void setTotal(Double total) { this.total = total; }
+
+    public List<DetallePedido> getDetalles() { return detalles; }
+    public void setDetalles(List<DetallePedido> detalles) { this.detalles = detalles; }
 }

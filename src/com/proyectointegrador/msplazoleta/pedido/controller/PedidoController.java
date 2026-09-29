@@ -8,6 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/pedidos")
 public class PedidoController {
@@ -19,24 +22,26 @@ public class PedidoController {
     }
 
     @PostMapping
-    public ResponseEntity<?> crearPedido(
-            @RequestParam Long idCliente,
-            @RequestParam Long idRestaurante,
-            @RequestParam Double total) {
+    public ResponseEntity<?> crearPedido(@RequestBody Map<String, Object> datos) {
         try {
-            Pedido pedido = pedidoService.crearPedido(idCliente, idRestaurante, total);
+            Long idCliente = ((Number) datos.get("idCliente")).longValue();
+            Long idRestaurante = ((Number) datos.get("idRestaurante")).longValue();
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> platos = (List<Map<String, Object>>) datos.get("platos");
+
+            Pedido pedido = pedidoService.crearPedido(idCliente, idRestaurante, platos);
             return new ResponseEntity<>(pedido, HttpStatus.CREATED);
-        } catch (IllegalStateException error) {
+        } catch (IllegalStateException | IllegalArgumentException error) {
             return new ResponseEntity<>(error.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
-    @GetMapping("/listar")
+    @GetMapping
     public Page<Pedido> listarPedidos(
             @RequestParam Long idRestaurante,
             @RequestParam EstadoPedido estado,
             @RequestParam(defaultValue = "0") int pagina,
             @RequestParam(defaultValue = "10") int cantidad) {
-        return pedidoService.listarPedidosPorEstado(idRestaurante, estado, pagina, cantidad);
+        return pedidoService.listarPedidosPorRestauranteYEstado(idRestaurante, estado, pagina, cantidad);
     }
 }
