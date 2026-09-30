@@ -1,7 +1,9 @@
 package com.proyectointegrador.msplazoleta.pedido.controller;
 
 import com.proyectointegrador.msplazoleta.pedido.entity.Pedido;
+import com.proyectointegrador.msplazoleta.pedido.enums.EstadoPedido;
 import com.proyectointegrador.msplazoleta.pedido.service.PedidoService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
