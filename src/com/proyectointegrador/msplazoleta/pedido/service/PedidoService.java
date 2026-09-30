@@ -5,6 +5,8 @@ import com.proyectointegrador.msplazoleta.pedido.entity.Pedido;
 import com.proyectointegrador.msplazoleta.pedido.enums.EstadoPedido;
 import com.proyectointegrador.msplazoleta.pedido.repository.DetallePedidoRepository;
 import com.proyectointegrador.msplazoleta.pedido.repository.PedidoRepository;
+import com.proyectointegrador.msplazoleta.plato.entity.Plato;
+import com.proyectointegrador.msplazoleta.plato.repository.PlatoRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,14 +24,19 @@ public class PedidoService {
 
     private final PedidoRepository pedidoRepository;
     private final DetallePedidoRepository detallePedidoRepository;
+    private final PlatoRepository platoRepository;
 
-    public PedidoService(PedidoRepository pedidoRepository, DetallePedidoRepository detallePedidoRepository) {
+    public PedidoService(
+            PedidoRepository pedidoRepository,
+            DetallePedidoRepository detallePedidoRepository,
+            PlatoRepository platoRepository) {
         this.pedidoRepository = pedidoRepository;
         this.detallePedidoRepository = detallePedidoRepository;
+        this.platoRepository = platoRepository;
     }
 
     @Transactional
-    public Pedido crearPedido(Long idCliente, Long idRestaurante, List<Map<String, Object>> platos) {
+    public Pedido crearPedido(Long idCliente, Long idRestaurante, List<Map<String, Object>> platosSolicitados) {
         EstadoPedido[] estadosActivos = {
             EstadoPedido.PENDIENTE,
             EstadoPedido.EN_PREPARACION,
@@ -39,15 +47,37 @@ public class PedidoService {
             throw new IllegalStateException("No puedes crear otro pedido. Tienes uno en proceso.");
         }
 
-        if (platos == null || platos.isEmpty()) {
+        if (platosSolicitados == null || platosSolicitados.isEmpty()) {
             throw new IllegalArgumentException("El pedido debe tener al menos un plato.");
         }
 
+        List<DetallePedido> detallesConfirmados = new ArrayList<>();
         Double total = 0.0;
-        for (Map<String, Object> p : platos) {
-            Double precio = (Double) p.get("precioUnitario");
-            Integer cantidad = (Integer) p.get("cantidad");
-            total += precio * cantidad;
+
+        for (Map<String, Object> solicitud : platosSolicitados) {
+            Long idPlato = ((Number) solicitud.get("idPlato")).longValue();
+            Integer cantidad = ((Number) solicitud.get("cantidad")).intValue();
+
+            Optional<Plato> platoOpt = platoRepository.findById(idPlato);
+            if (platoOpt.isEmpty()) {
+                throw new IllegalArgumentException("El plato con id " + idPlato + " no existe.");
+            }
+            Plato platoReal = platoOpt.get();
+
+            if (!platoReal.getIdRestaurante().equals(idRestaurante)) {
+                throw new IllegalArgumentException(
+                    "El plato '" + platoReal.getNombre() + "' no pertenece al restaurante indicado."
+                );
+            }
+
+            Double precioReal = platoReal.getPrecio();
+            total += precioReal * cantidad;
+
+            DetallePedido detalle = new DetallePedido();
+            detalle.setIdPlato(idPlato);
+            detalle.setCantidad(cantidad);
+            detalle.setPrecioUnitario(precioReal);
+            detallesConfirmados.add(detalle);
         }
 
         Pedido nuevoPedido = new Pedido();
@@ -58,15 +88,12 @@ public class PedidoService {
         nuevoPedido.setTotal(total);
         Pedido pedidoGuardado = pedidoRepository.save(nuevoPedido);
 
-        for (Map<String, Object> p : platos) {
-            DetallePedido detalle = new DetallePedido();
+        for (DetallePedido detalle : detallesConfirmados) {
             detalle.setIdPedido(pedidoGuardado.getId());
-            detalle.setIdPlato(((Number) p.get("idPlato")).longValue());
-            detalle.setCantidad((Integer) p.get("cantidad"));
-            detalle.setPrecioUnitario((Double) p.get("precioUnitario"));
             detallePedidoRepository.save(detalle);
         }
 
+        pedidoGuardado.setDetalles(detallesConfirmados);
         return pedidoGuardado;
     }
 
