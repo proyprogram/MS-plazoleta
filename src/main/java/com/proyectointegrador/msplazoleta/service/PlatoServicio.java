@@ -3,6 +3,9 @@ package com.proyectointegrador.msplazoleta.service;
 import com.proyectointegrador.msplazoleta.entity.Plato;
 import com.proyectointegrador.msplazoleta.entity.Restaurante;
 import com.proyectointegrador.msplazoleta.repository.PlatoRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
