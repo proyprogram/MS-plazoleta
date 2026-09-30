@@ -4,7 +4,6 @@ import com.proyectointegrador.msplazoleta.dto.RestauranteResponseDTO;
 import com.proyectointegrador.msplazoleta.dto.request.CrearRestauranteRequest;
 import com.proyectointegrador.msplazoleta.entity.Restaurante;
 import com.proyectointegrador.msplazoleta.service.RestauranteServicio;
-import com.proyectointegrador.msplazoleta.service.RestauranteServicioV2;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -21,11 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class RestauranteController {
 
     private final RestauranteServicio restauranteServicio;
-    private final RestauranteServicioV2 restauranteServicioV2;
 
-    public RestauranteController(RestauranteServicio restauranteServicio, RestauranteServicioV2 restauranteServicioV2) {
+    public RestauranteController(RestauranteServicio restauranteServicio) {
         this.restauranteServicio = restauranteServicio;
-        this.restauranteServicioV2 = restauranteServicioV2;
     }
 
     @PostMapping
@@ -45,6 +42,6 @@ public class RestauranteController {
             @RequestParam(defaultValue = "0") int pagina,
             @RequestParam(defaultValue = "10") int cantidad) {
 
-        return restauranteServicioV2.listarRestaurantes(pagina, cantidad);
+        return restauranteServicio.listarRestaurantes(pagina, cantidad);
     }
 }
