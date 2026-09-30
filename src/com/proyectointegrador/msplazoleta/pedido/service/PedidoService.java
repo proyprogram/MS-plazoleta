@@ -1,12 +1,12 @@
 package com.proyectointegrador.msplazoleta.pedido.service;
 
-import com.proyectointegrador.msplazoleta.pedido.entity.DetallePedido;
-import com.proyectointegrador.msplazoleta.pedido.entity.Pedido;
-import com.proyectointegrador.msplazoleta.pedido.enums.EstadoPedido;
-import com.proyectointegrador.msplazoleta.pedido.repository.DetallePedidoRepository;
-import com.proyectointegrador.msplazoleta.pedido.repository.PedidoRepository;
-import com.proyectointegrador.msplazoleta.plato.entity.Plato;
-import com.proyectointegrador.msplazoleta.plato.repository.PlatoRepository;
+import com.proyectointegrador.msplazoleta.entity.DetallePedido;
+import com.proyectointegrador.msplazoleta.entity.Pedido;
+import com.proyectointegrador.msplazoleta.entity.Plato;
+import com.proyectointegrador.msplazoleta.enums.EstadoPedido;
+import com.proyectointegrador.msplazoleta.repository.DetallePedidoRepository;
+import com.proyectointegrador.msplazoleta.repository.PedidoRepository;
+import com.proyectointegrador.msplazoleta.repository.PlatoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,7 +61,8 @@ public class PedidoService {
             }
             Plato platoReal = platoOpt.get();
 
-            if (!platoReal.getIdRestaurante().equals(idRestaurante)) {
+            Long idRestauranteDelPlato = platoReal.getRestaurante().getId();
+            if (!idRestauranteDelPlato.equals(idRestaurante)) {
                 throw new IllegalArgumentException(
                     "El plato '" + platoReal.getNombre() + "' no pertenece al restaurante indicado."
                 );
@@ -92,16 +93,5 @@ public class PedidoService {
 
         pedidoGuardado.setDetalles(detallesConfirmados);
         return pedidoGuardado;
-    }
-
-    public Pedido obtenerPedidoConDetalles(Long idPedido) {
-        Optional<Pedido> pedidoOpt = pedidoRepository.findById(idPedido);
-        if (pedidoOpt.isEmpty()) {
-            return null;
-        }
-        Pedido pedido = pedidoOpt.get();
-        List<DetallePedido> detalles = detallePedidoRepository.findByIdPedido(idPedido);
-        pedido.setDetalles(detalles);
-        return pedido;
     }
 }
