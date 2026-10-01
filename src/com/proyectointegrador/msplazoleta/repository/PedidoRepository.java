@@ -1,6 +1,6 @@
-package com.proyectointegrador.msplazoleta.pedido.repository;
+package com.proyectointegrador.msplazoleta.repository;
 
-import com.proyectointegrador.msplazoleta.pedido.entity.Pedido;
+import com.proyectointegrador.msplazoleta.entity.Pedido;
 import com.proyectointegrador.msplazoleta.pedido.enums.EstadoPedido;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

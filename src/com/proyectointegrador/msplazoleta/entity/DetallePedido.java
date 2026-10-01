@@ -1,4 +1,4 @@
-package com.proyectointegrador.msplazoleta.pedido.entity;
+package com.proyectointegrador.msplazoleta.entity;
 
 import jakarta.persistence.*;
 

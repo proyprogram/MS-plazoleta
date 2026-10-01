@@ -1,6 +1,6 @@
-package com.proyectointegrador.msplazoleta.pedido.repository;
+package com.proyectointegrador.msplazoleta.repository;
 
-import com.proyectointegrador.msplazoleta.pedido.entity.DetallePedido;
+import com.proyectointegrador.msplazoleta.entity.DetallePedido;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 

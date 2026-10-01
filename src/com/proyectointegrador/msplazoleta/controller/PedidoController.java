@@ -1,4 +1,4 @@
-package com.proyectointegrador.msplazoleta.pedido.controller;
+package com.proyectointegrador.msplazoleta.controller;
 
 import com.proyectointegrador.msplazoleta.entity.Pedido;
 import com.proyectointegrador.msplazoleta.enums.EstadoPedido;

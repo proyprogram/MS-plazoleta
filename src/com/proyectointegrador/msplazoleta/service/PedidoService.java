@@ -1,4 +1,4 @@
-package com.proyectointegrador.msplazoleta.pedido.service;
+package com.proyectointegrador.msplazoleta.service;
 
 import com.proyectointegrador.msplazoleta.entity.DetallePedido;
 import com.proyectointegrador.msplazoleta.entity.Pedido;
