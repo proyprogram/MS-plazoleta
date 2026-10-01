@@ -19,7 +19,10 @@ public class DetallePedido {
     @Column(nullable = false)
     private Integer cantidad;
 
+    @Column(name = "precio_unitario", nullable = false)
     private Double precioUnitario;
+
+    public DetallePedido() {}
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

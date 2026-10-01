@@ -1,9 +1,13 @@
 package com.proyectointegrador.msplazoleta.controller;
 
 import com.proyectointegrador.msplazoleta.entity.Pedido;
+<<<<<<<< HEAD:src/com/proyectointegrador/msplazoleta/controller/PedidoController.java
 import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
 import com.proyectointegrador.msplazoleta.service.PedidoService;
 import org.springframework.data.domain.Page;
+========
+import com.proyectointegrador.msplazoleta.service.PedidoService;
+>>>>>>>> origin/develop:src/main/java/com/proyectointegrador/msplazoleta/controller/PedidoController.java
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

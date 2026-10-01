@@ -1,9 +1,11 @@
 package com.proyectointegrador.msplazoleta.entity;
 
+<<<<<<<< HEAD:src/com/proyectointegrador/msplazoleta/entity/Pedido.java
 import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
+========
+>>>>>>>> origin/develop:src/main/java/com/proyectointegrador/msplazoleta/entity/Pedido.java
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -21,17 +23,19 @@ public class Pedido {
     private Long idRestaurante;
 
     @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private EstadoPedido estado;
-
-    @Column(nullable = false)
     private LocalDateTime fecha;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstadoPedido estado;
 
     @Column(nullable = false)
     private Double total;
 
     @Transient
-    private List<DetallePedido> detalles = new ArrayList<>();
+    private List<DetallePedido> detalles;
+
+    public Pedido() {}
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -42,11 +46,11 @@ public class Pedido {
     public Long getIdRestaurante() { return idRestaurante; }
     public void setIdRestaurante(Long idRestaurante) { this.idRestaurante = idRestaurante; }
 
-    public EstadoPedido getEstado() { return estado; }
-    public void setEstado(EstadoPedido estado) { this.estado = estado; }
-
     public LocalDateTime getFecha() { return fecha; }
     public void setFecha(LocalDateTime fecha) { this.fecha = fecha; }
+
+    public EstadoPedido getEstado() { return estado; }
+    public void setEstado(EstadoPedido estado) { this.estado = estado; }
 
     public Double getTotal() { return total; }
     public void setTotal(Double total) { this.total = total; }
