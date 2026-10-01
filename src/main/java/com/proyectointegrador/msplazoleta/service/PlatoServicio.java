@@ -5,6 +5,9 @@ import com.proyectointegrador.msplazoleta.entity.Plato;
 import com.proyectointegrador.msplazoleta.entity.Restaurante;
 import com.proyectointegrador.msplazoleta.repository.PlatoRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
