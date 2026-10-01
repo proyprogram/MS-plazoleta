@@ -1,5 +1,6 @@
 package com.proyectointegrador.msplazoleta.controller;
 
+import com.proyectointegrador.msplazoleta.dto.PlatoResponseDTO;
 import com.proyectointegrador.msplazoleta.dto.request.CambiarEstadoPlatoRequest;
 import com.proyectointegrador.msplazoleta.dto.request.CrearPlatoRequest;
 import com.proyectointegrador.msplazoleta.entity.Plato;
@@ -13,6 +14,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/platos")
@@ -42,5 +46,19 @@ public class PlatoController {
     public ResponseEntity<Plato> cambiarEstado(@PathVariable Long id, @Valid @RequestBody CambiarEstadoPlatoRequest request) {
         Plato plato = platoServicio.cambiarEstado(id, request.getIdPropietario(), request.getActivo());
         return ResponseEntity.ok(plato);
+    }
+    @GetMapping
+    public Page<PlatoResponseDTO> listarPlatos(
+            @RequestParam Long idRestaurante,
+            @RequestParam(required = false) String categoria,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int cantidad) {
+
+        return platoServicio.listarPlatos(
+                idRestaurante,
+                categoria,
+                pagina,
+                cantidad
+        );
     }
 }

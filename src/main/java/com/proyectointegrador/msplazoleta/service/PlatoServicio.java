@@ -1,9 +1,13 @@
 package com.proyectointegrador.msplazoleta.service;
 
+import com.proyectointegrador.msplazoleta.dto.PlatoResponseDTO;
 import com.proyectointegrador.msplazoleta.entity.Plato;
 import com.proyectointegrador.msplazoleta.entity.Restaurante;
 import com.proyectointegrador.msplazoleta.repository.PlatoRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -51,5 +55,40 @@ public class PlatoServicio {
 
     public List<Plato> listarTodos() {
         return platoRepository.findAll();
+    }
+
+    public Page<PlatoResponseDTO> listarPlatos(
+            Long idRestaurante,
+            String categoria,
+            int pagina,
+            int cantidad) {
+
+        Pageable pageable = PageRequest.of(pagina, cantidad);
+
+        Page<Plato> platos;
+
+        if (categoria != null && !categoria.isBlank()) {
+            platos = platoRepository.findByRestaurante_IdAndCategoriaIgnoreCase(
+                    idRestaurante,
+                    categoria,
+                    pageable
+            );
+        } else {
+            platos = platoRepository.findByRestaurante_Id(
+                    idRestaurante,
+                    pageable
+            );
+        }
+
+        return platos.map(plato ->
+                PlatoResponseDTO.builder()
+                        .nombre(plato.getNombre())
+                        .descripcion(plato.getDescripcion())
+                        .precio(plato.getPrecio())
+                        .urlImagen(plato.getUrlImagen())
+                        .activo(plato.isActivo())
+                        .categoria(plato.getCategoria())
+                        .build()
+        );
     }
 }
