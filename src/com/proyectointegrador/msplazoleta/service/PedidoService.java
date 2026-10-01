@@ -3,7 +3,7 @@ package com.proyectointegrador.msplazoleta.service;
 import com.proyectointegrador.msplazoleta.entity.DetallePedido;
 import com.proyectointegrador.msplazoleta.entity.Pedido;
 import com.proyectointegrador.msplazoleta.entity.Plato;
-import com.proyectointegrador.msplazoleta.enums.EstadoPedido;
+import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
 import com.proyectointegrador.msplazoleta.repository.DetallePedidoRepository;
 import com.proyectointegrador.msplazoleta.repository.PedidoRepository;
 import com.proyectointegrador.msplazoleta.repository.PlatoRepository;

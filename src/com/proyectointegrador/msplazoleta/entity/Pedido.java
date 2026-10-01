@@ -1,6 +1,6 @@
 package com.proyectointegrador.msplazoleta.entity;
 
-import com.proyectointegrador.msplazoleta.pedido.enums.EstadoPedido;
+import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
