@@ -3,6 +3,7 @@ package com.proyectointegrador.msplazoleta.controller;
 import com.proyectointegrador.msplazoleta.dto.request.CrearEmpleadoRequest;
 import com.proyectointegrador.msplazoleta.service.EmpleadoServicio;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +21,9 @@ public class EmpleadoController {
     }
 
     @PostMapping
-    public ResponseEntity<Map> crear(@Valid @RequestBody CrearEmpleadoRequest request) {
-        Map response = empleadoServicio.crearEmpleado(request);
+    public ResponseEntity<Map> crear(@Valid @RequestBody CrearEmpleadoRequest request,
+                                     @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+        Map response = empleadoServicio.crearEmpleado(request, authorization);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
