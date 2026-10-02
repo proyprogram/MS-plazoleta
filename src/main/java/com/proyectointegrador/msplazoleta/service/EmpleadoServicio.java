@@ -2,6 +2,7 @@ package com.proyectointegrador.msplazoleta.service;
 
 import com.proyectointegrador.msplazoleta.dto.request.CrearEmpleadoRequest;
 import com.proyectointegrador.msplazoleta.entity.Restaurante;
+import com.proyectointegrador.msplazoleta.security.JwtService;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -16,10 +17,12 @@ public class EmpleadoServicio {
 
     private final RestauranteServicio restauranteServicio;
     private final RestTemplate restTemplate;
+    private final JwtService jwtService;
 
-    public EmpleadoServicio(RestauranteServicio restauranteServicio, RestTemplate restTemplate) {
+    public EmpleadoServicio(RestauranteServicio restauranteServicio, RestTemplate restTemplate, JwtService jwtService) {
         this.restauranteServicio = restauranteServicio;
         this.restTemplate = restTemplate;
+        this.jwtService = jwtService;
     }
 
     public Map crearEmpleado(CrearEmpleadoRequest request, String authorization) {
@@ -30,9 +33,13 @@ public class EmpleadoServicio {
             throw new IllegalArgumentException("El restaurante no existe");
         }
 
-        if (!restaurante.getIdPropietario().equals(request.getIdPropietario())) {
+        String token = authorization.replace("Bearer ", "");
+        Long idPropietarioToken = jwtService.extractIdUsuario(token);
+
+        if (idPropietarioToken == null || !restaurante.getIdPropietario().equals(idPropietarioToken)) {
             throw new IllegalStateException("Solo el propietario del restaurante puede crear empleados");
         }
+
 
         Map<String, Object> body = Map.of(
                 "nombre", request.getNombre(),

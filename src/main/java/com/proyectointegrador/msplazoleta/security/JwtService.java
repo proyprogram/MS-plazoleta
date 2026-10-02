@@ -51,6 +51,20 @@ public class JwtService {
         return ((Number) valor).longValue();
     }
 
+    public Long extractIdUsuario(String token) {
+        Object valor = Jwts.parser()
+                .verifyWith(getSecretKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("idUsuario");
+
+        if (valor == null) {
+            return null;
+        }
+        return ((Number) valor).longValue();
+    }
+
     public boolean isTokenValido(String token) {
         try {
             Jwts.parser()
