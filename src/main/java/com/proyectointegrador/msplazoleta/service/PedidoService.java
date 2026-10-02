@@ -71,7 +71,7 @@ public class PedidoService {
                 );
             }
 
-            Double precioReal = platoReal.getPrecio();
+            Double precioReal = platoReal.getPrecio().doubleValue();
             total += precioReal * cantidad;
 
             DetallePedido detalle = new DetallePedido();

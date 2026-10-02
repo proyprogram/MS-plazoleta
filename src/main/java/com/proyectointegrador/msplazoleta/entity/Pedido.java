@@ -1,9 +1,5 @@
 package com.proyectointegrador.msplazoleta.entity;
 
-<<<<<<<< HEAD:src/com/proyectointegrador/msplazoleta/entity/Pedido.java
-import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
-========
->>>>>>>> origin/develop:src/main/java/com/proyectointegrador/msplazoleta/entity/Pedido.java
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
