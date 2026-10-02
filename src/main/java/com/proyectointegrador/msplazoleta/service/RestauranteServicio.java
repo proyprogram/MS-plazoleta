@@ -1,6 +1,6 @@
 package com.proyectointegrador.msplazoleta.service;
 
-import com.proyectointegrador.msplazoleta.dto.RestauranteResponseDTO;
+import com.proyectointegrador.msplazoleta.dto.response.RestauranteResponseDTO;
 import com.proyectointegrador.msplazoleta.entity.Restaurante;
 import com.proyectointegrador.msplazoleta.repository.RestauranteRepository;
 import org.springframework.data.domain.Page;

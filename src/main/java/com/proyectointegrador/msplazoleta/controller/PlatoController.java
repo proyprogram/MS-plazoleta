@@ -1,6 +1,6 @@
 package com.proyectointegrador.msplazoleta.controller;
 
-import com.proyectointegrador.msplazoleta.dto.PlatoResponseDTO;
+import com.proyectointegrador.msplazoleta.dto.response.PlatoResponseDTO;
 import com.proyectointegrador.msplazoleta.dto.request.CambiarEstadoPlatoRequest;
 import com.proyectointegrador.msplazoleta.dto.request.CrearPlatoRequest;
 import com.proyectointegrador.msplazoleta.entity.Plato;

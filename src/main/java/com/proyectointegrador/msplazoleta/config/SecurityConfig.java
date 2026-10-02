@@ -24,21 +24,22 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/error").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/restaurantes/**", "/api/platos/**").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/restaurantes").hasRole("ADMINISTRADOR")
-                    .requestMatchers(HttpMethod.POST, "/api/empleados").hasRole("PROPIETARIO")
-                    .requestMatchers(HttpMethod.POST, "/api/platos").hasRole("PROPIETARIO")
-                    .requestMatchers(HttpMethod.PATCH, "/api/platos/**").hasRole("PROPIETARIO")
-                    .requestMatchers(HttpMethod.POST, "/api/pedidos").hasRole("CLIENTE")
-                    .anyRequest().authenticated()
-            )
-            .addFilterBefore(
-                    jwtAuthenticationFilter,
-                    UsernamePasswordAuthenticationFilter.class
-            );
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/restaurantes/**", "/api/platos/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/restaurantes").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.POST, "/api/empleados").hasRole("PROPIETARIO")
+                        .requestMatchers(HttpMethod.POST, "/api/platos").hasRole("PROPIETARIO")
+                        .requestMatchers(HttpMethod.PATCH, "/api/platos/**").hasRole("PROPIETARIO")
+                        .requestMatchers(HttpMethod.POST, "/api/pedidos").hasRole("CLIENTE")
+                        .requestMatchers(HttpMethod.GET, "/api/pedidos").hasAnyRole("EMPLEADO", "PROPIETARIO")
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
         return http.build();
     }
 }
