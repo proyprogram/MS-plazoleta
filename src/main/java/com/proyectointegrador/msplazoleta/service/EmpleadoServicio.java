@@ -2,6 +2,8 @@ package com.proyectointegrador.msplazoleta.service;
 
 import com.proyectointegrador.msplazoleta.dto.request.CrearEmpleadoRequest;
 import com.proyectointegrador.msplazoleta.entity.Restaurante;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,7 +22,7 @@ public class EmpleadoServicio {
         this.restTemplate = restTemplate;
     }
 
-    public Map crearEmpleado(CrearEmpleadoRequest request) {
+    public Map crearEmpleado(CrearEmpleadoRequest request, String authorization) {
 
         Restaurante restaurante = restauranteServicio.buscarPorId(request.getIdRestaurante());
 
@@ -41,6 +43,10 @@ public class EmpleadoServicio {
                 "clave", request.getClave()
         );
 
-        return restTemplate.postForObject(URL_MS_USUARIOS, body, Map.class);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, authorization);
+        HttpEntity<Map<String, String>> entity = new HttpEntity<>(body, headers);
+
+        return restTemplate.postForObject(URL_MS_USUARIOS, entity, Map.class);
     }
 }
