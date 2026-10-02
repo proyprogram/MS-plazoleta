@@ -2,8 +2,10 @@ package com.proyectointegrador.msplazoleta.controller;
 
 import com.proyectointegrador.msplazoleta.entity.Pedido;
 import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
+import com.proyectointegrador.msplazoleta.security.JwtService;
 import com.proyectointegrador.msplazoleta.service.PedidoService;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +18,11 @@ import java.util.Map;
 public class PedidoController {
 
     private final PedidoService pedidoService;
+    private final JwtService jwtService;
 
-    public PedidoController(PedidoService pedidoService) {
+    public PedidoController(PedidoService pedidoService, JwtService jwtService) {
         this.pedidoService = pedidoService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping
@@ -37,11 +41,27 @@ public class PedidoController {
     }
 
     @GetMapping
-    public Page<Pedido> listarPedidos(
+    public ResponseEntity<?> listarPedidos(
             @RequestParam Long idRestaurante,
             @RequestParam EstadoPedido estado,
             @RequestParam(defaultValue = "0") int pagina,
-            @RequestParam(defaultValue = "10") int cantidad) {
-        return pedidoService.listarPedidosPorRestauranteYEstado(idRestaurante, estado, pagina, cantidad);
+            @RequestParam(defaultValue = "10") int cantidad,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+
+        String token = authorization.replace("Bearer ", "");
+        String rol = jwtService.extractRol(token);
+
+        if ("EMPLEADO".equals(rol)) {
+            Long idRestauranteEmpleado = jwtService.extractIdRestaurante(token);
+            if (idRestauranteEmpleado == null || !idRestauranteEmpleado.equals(idRestaurante)) {
+                return new ResponseEntity<>(
+                        "Solo puedes consultar los pedidos del restaurante al que perteneces",
+                        HttpStatus.FORBIDDEN
+                );
+            }
+        }
+
+        Page<Pedido> pedidos = pedidoService.listarPedidosPorRestauranteYEstado(idRestaurante, estado, pagina, cantidad);
+        return ResponseEntity.ok(pedidos);
     }
 }

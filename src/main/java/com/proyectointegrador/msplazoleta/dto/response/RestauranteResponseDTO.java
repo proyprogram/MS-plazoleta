@@ -1,4 +1,4 @@
-package com.proyectointegrador.msplazoleta.dto;
+package com.proyectointegrador.msplazoleta.dto.response;
 
 import lombok.*;
 

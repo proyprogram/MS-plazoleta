@@ -34,18 +34,19 @@ public class EmpleadoServicio {
             throw new IllegalStateException("Solo el propietario del restaurante puede crear empleados");
         }
 
-        Map<String, String> body = Map.of(
+        Map<String, Object> body = Map.of(
                 "nombre", request.getNombre(),
                 "apellido", request.getApellido(),
                 "documentoDeIdentidad", request.getDocumentoDeIdentidad(),
                 "celular", request.getCelular(),
                 "correo", request.getCorreo(),
-                "clave", request.getClave()
+                "clave", request.getClave(),
+                "idRestaurante", request.getIdRestaurante()
         );
 
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, authorization);
-        HttpEntity<Map<String, String>> entity = new HttpEntity<>(body, headers);
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
         return restTemplate.postForObject(URL_MS_USUARIOS, entity, Map.class);
     }

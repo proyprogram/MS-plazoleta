@@ -1,6 +1,6 @@
 package com.proyectointegrador.msplazoleta.service;
 
-import com.proyectointegrador.msplazoleta.dto.PlatoResponseDTO;
+import com.proyectointegrador.msplazoleta.dto.response.PlatoResponseDTO;
 import com.proyectointegrador.msplazoleta.entity.Plato;
 import com.proyectointegrador.msplazoleta.entity.Restaurante;
 import com.proyectointegrador.msplazoleta.repository.PlatoRepository;

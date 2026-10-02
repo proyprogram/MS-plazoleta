@@ -1,6 +1,6 @@
 package com.proyectointegrador.msplazoleta.controller;
 
-import com.proyectointegrador.msplazoleta.dto.RestauranteResponseDTO;
+import com.proyectointegrador.msplazoleta.dto.response.RestauranteResponseDTO;
 import com.proyectointegrador.msplazoleta.dto.request.CrearRestauranteRequest;
 import com.proyectointegrador.msplazoleta.entity.Restaurante;
 import com.proyectointegrador.msplazoleta.service.RestauranteServicio;
