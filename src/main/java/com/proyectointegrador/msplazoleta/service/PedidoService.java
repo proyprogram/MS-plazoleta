@@ -1,12 +1,15 @@
 package com.proyectointegrador.msplazoleta.service;
 
 import com.proyectointegrador.msplazoleta.entity.DetallePedido;
-import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
 import com.proyectointegrador.msplazoleta.entity.Pedido;
 import com.proyectointegrador.msplazoleta.entity.Plato;
+import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
 import com.proyectointegrador.msplazoleta.repository.DetallePedidoRepository;
 import com.proyectointegrador.msplazoleta.repository.PedidoRepository;
 import com.proyectointegrador.msplazoleta.repository.PlatoRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -93,5 +96,15 @@ public class PedidoService {
 
         pedidoGuardado.setDetalles(detallesConfirmados);
         return pedidoGuardado;
+    }
+
+    public Page<Pedido> listarPedidosPorRestauranteYEstado(Long idRestaurante, EstadoPedido estado, int pagina, int cantidad) {
+        Pageable paginaDatos = PageRequest.of(pagina, cantidad);
+        Page<Pedido> pedidos = pedidoRepository.findByIdRestauranteAndEstado(idRestaurante, estado, paginaDatos);
+        for (Pedido p : pedidos) {
+            List<DetallePedido> detalles = detallePedidoRepository.findByIdPedido(p.getId());
+            p.setDetalles(detalles);
+        }
+        return pedidos;
     }
 }
