@@ -25,6 +25,9 @@ public class Pedido {
     @Column(nullable = false)
     private EstadoPedido estado;
 
+    @Column(name = "id_empleado_asignado")
+    private Long idEmpleadoAsignado;
+
     @Column(nullable = false)
     private Double total;
 
@@ -47,6 +50,9 @@ public class Pedido {
 
     public EstadoPedido getEstado() { return estado; }
     public void setEstado(EstadoPedido estado) { this.estado = estado; }
+
+    public Long getIdEmpleadoAsignado() { return idEmpleadoAsignado; }
+    public void setIdEmpleadoAsignado(Long idEmpleadoAsignado) { this.idEmpleadoAsignado = idEmpleadoAsignado; }
 
     public Double getTotal() { return total; }
     public void setTotal(Double total) { this.total = total; }
