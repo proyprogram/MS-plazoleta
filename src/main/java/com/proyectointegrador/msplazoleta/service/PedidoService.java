@@ -107,4 +107,22 @@ public class PedidoService {
         }
         return pedidos;
     }
+
+    @Transactional
+    public Pedido asignarPedido(Long idPedido, Long idEmpleado, Long idRestauranteEmpleado) {
+        Pedido pedido = pedidoRepository.findById(idPedido)
+                .orElseThrow(() -> new IllegalArgumentException("El pedido con id " + idPedido + " no existe."));
+
+        if (!pedido.getIdRestaurante().equals(idRestauranteEmpleado)) {
+            throw new IllegalArgumentException("No puedes asignarte un pedido de otro restaurante.");
+        }
+
+        if (pedido.getEstado() != EstadoPedido.PENDIENTE) {
+            throw new IllegalStateException("Solo puedes asignarte pedidos que estén en estado PENDIENTE.");
+        }
+
+        pedido.setIdEmpleadoAsignado(idEmpleado);
+        pedido.setEstado(EstadoPedido.EN_PREPARACION);
+        return pedidoRepository.save(pedido);
+    }
 }
