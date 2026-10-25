@@ -25,14 +25,17 @@ public class PedidoService {
     private final PedidoRepository pedidoRepository;
     private final DetallePedidoRepository detallePedidoRepository;
     private final PlatoRepository platoRepository;
+    private final PedidoLogService pedidoLogService;
 
     public PedidoService(
             PedidoRepository pedidoRepository,
             DetallePedidoRepository detallePedidoRepository,
-            PlatoRepository platoRepository) {
+            PlatoRepository platoRepository,
+            PedidoLogService pedidoLogService) {
         this.pedidoRepository = pedidoRepository;
         this.detallePedidoRepository = detallePedidoRepository;
         this.platoRepository = platoRepository;
+        this.pedidoLogService = pedidoLogService;
     }
 
     @Transactional
@@ -88,6 +91,7 @@ public class PedidoService {
         nuevoPedido.setEstado(EstadoPedido.PENDIENTE);
         nuevoPedido.setTotal(total);
         Pedido pedidoGuardado = pedidoRepository.save(nuevoPedido);
+        pedidoLogService.registrar(pedidoGuardado.getId(), null, EstadoPedido.PENDIENTE, idCliente);
 
         for (DetallePedido detalle : detallesConfirmados) {
             detalle.setIdPedido(pedidoGuardado.getId());
@@ -123,6 +127,8 @@ public class PedidoService {
 
         pedido.setIdEmpleadoAsignado(idEmpleado);
         pedido.setEstado(EstadoPedido.EN_PREPARACION);
-        return pedidoRepository.save(pedido);
+        Pedido guardado = pedidoRepository.save(pedido);
+        pedidoLogService.registrar(guardado.getId(), EstadoPedido.PENDIENTE, EstadoPedido.EN_PREPARACION, idEmpleado);
+        return guardado;
     }
 }
