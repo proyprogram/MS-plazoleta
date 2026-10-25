@@ -1,6 +1,7 @@
 package com.proyectointegrador.msplazoleta.controller;
 
 import com.proyectointegrador.msplazoleta.entity.Pedido;
+import com.proyectointegrador.msplazoleta.entity.PedidoLog;
 import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
 import com.proyectointegrador.msplazoleta.security.JwtService;
 import com.proyectointegrador.msplazoleta.service.PedidoService;
@@ -81,5 +82,23 @@ public class PedidoController {
 
         Page<Pedido> pedidos = pedidoService.listarPedidosPorRestauranteYEstado(idRestaurante, estado, pagina, cantidad);
         return ResponseEntity.ok(pedidos);
+    }
+
+    @PatchMapping("/{idPedido}/cancelar")
+    public ResponseEntity<?> cancelarPedido(
+            @PathVariable Long idPedido,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+        try {
+            String token = authorization.replace("Bearer ", "");
+            Long idCliente = jwtService.extractIdUsuario(token);
+            Pedido pedido = pedidoService.cancelarPedido(idPedido, idCliente);
+            return ResponseEntity.ok(pedido);
+        } catch (SecurityException error) {
+            return new ResponseEntity<>(error.getMessage(), HttpStatus.FORBIDDEN);
+        } catch (IllegalStateException error) {
+            return new ResponseEntity<>(error.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (IllegalArgumentException error) {
+            return new ResponseEntity<>(error.getMessage(), HttpStatus.NOT_FOUND);
+        }
     }
 }

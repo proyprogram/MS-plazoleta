@@ -2,6 +2,7 @@ package com.proyectointegrador.msplazoleta.service;
 
 import com.proyectointegrador.msplazoleta.entity.DetallePedido;
 import com.proyectointegrador.msplazoleta.entity.Pedido;
+import com.proyectointegrador.msplazoleta.entity.PedidoLog;
 import com.proyectointegrador.msplazoleta.entity.Plato;
 import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
 import com.proyectointegrador.msplazoleta.repository.DetallePedidoRepository;
@@ -129,6 +130,26 @@ public class PedidoService {
         pedido.setEstado(EstadoPedido.EN_PREPARACION);
         Pedido guardado = pedidoRepository.save(pedido);
         pedidoLogService.registrar(guardado.getId(), EstadoPedido.PENDIENTE, EstadoPedido.EN_PREPARACION, idEmpleado);
+        return guardado;
+    }
+
+    @Transactional
+    public Pedido cancelarPedido(Long idPedido, Long idCliente) {
+        Pedido pedido = pedidoRepository.findById(idPedido)
+                .orElseThrow(() -> new IllegalArgumentException("El pedido con id " + idPedido + " no existe."));
+
+        if (!pedido.getIdCliente().equals(idCliente)) {
+            throw new SecurityException("Solo puedes cancelar tus propios pedidos.");
+        }
+
+        if (pedido.getEstado() != EstadoPedido.PENDIENTE) {
+            throw new IllegalStateException("Lo sentimos, tu pedido ya está en preparación y no puede cancelarse.");
+        }
+
+        EstadoPedido estadoAnterior = pedido.getEstado();
+        pedido.setEstado(EstadoPedido.CANCELADO);
+        Pedido guardado = pedidoRepository.save(pedido);
+        pedidoLogService.registrar(guardado.getId(), estadoAnterior, EstadoPedido.CANCELADO, idCliente);
         return guardado;
     }
 }
