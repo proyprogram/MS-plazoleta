@@ -32,9 +32,14 @@ public class Pedido {
     @Column(nullable = false)
     private EstadoPedido estado;
 
+    // HU13: empleado que tiene asignado el pedido
+    @Column(name = "id_empleado_asignado")
+    private Long idEmpleadoAsignado;
+
     @Column(nullable = false)
     private Double total;
 
+    // HU14: PIN de seguridad del pedido
     @Column(name = "pin_seguridad")
     private String pinSeguridad;
 

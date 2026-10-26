@@ -57,6 +57,38 @@ public class PedidoController {
         return new ResponseEntity<>(pedido, HttpStatus.CREATED);
     }
 
+    @PatchMapping("/{id}/asignar")
+    public ResponseEntity<?> asignarPedido(
+            @PathVariable Long id,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+
+        try {
+            String token = authorization.replace("Bearer ", "");
+            Long idEmpleado = jwtService.extractIdUsuario(token);
+            Long idRestauranteEmpleado =
+                    jwtService.extractIdRestaurante(token);
+
+            Pedido pedido = pedidoService.asignarPedido(
+                    id,
+                    idEmpleado,
+                    idRestauranteEmpleado
+            );
+
+            return ResponseEntity.ok(pedido);
+
+        } catch (IllegalArgumentException error) {
+            return new ResponseEntity<>(
+                    error.getMessage(),
+                    HttpStatus.BAD_REQUEST
+            );
+        } catch (IllegalStateException error) {
+            return new ResponseEntity<>(
+                    error.getMessage(),
+                    HttpStatus.CONFLICT
+            );
+        }
+    }
+
     @GetMapping
     public ResponseEntity<?> listarPedidos(
             @RequestParam Long idRestaurante,
@@ -135,4 +167,3 @@ public class PedidoController {
         return ResponseEntity.ok(pedido);
     }
 }
-
