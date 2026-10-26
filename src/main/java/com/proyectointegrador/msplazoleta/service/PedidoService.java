@@ -125,7 +125,7 @@ public class PedidoService {
 
         if (pedido.getEstado() != EstadoPedido.EN_PREPARACION) {
             throw new IllegalStateException(
-                    "Solo puedes marcar como listo un pedido en preparaciÃ³n.");
+                    "Solo puedes marcar como listo un pedido en preparación.");
         }
 
         String pin = String.valueOf(secureRandom.nextInt(900000) + 100000);

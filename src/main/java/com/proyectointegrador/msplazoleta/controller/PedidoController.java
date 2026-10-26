@@ -1,11 +1,13 @@
 package com.proyectointegrador.msplazoleta.controller;
 
-import com.proyectointegrador.msplazoleta.entity.Pedido;
 import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
+import com.proyectointegrador.msplazoleta.entity.Pedido;
 import com.proyectointegrador.msplazoleta.security.JwtService;
-import com.proyectointegrador.msplazoleta.service.PedidoService;
 import com.proyectointegrador.msplazoleta.service.NotificacionService;
+import com.proyectointegrador.msplazoleta.service.PedidoService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/pedidos")
 public class PedidoController {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(PedidoController.class);
 
     private final PedidoService pedidoService;
     private final JwtService jwtService;
@@ -114,11 +119,20 @@ public class PedidoController {
                 idRestauranteEmpleado
         );
 
-        notificacionService.notificarPedidoListo(
-                pedido,
-                authorization
-        );
+        try {
+            notificacionService.notificarPedidoListo(
+                    pedido,
+                    authorization
+            );
+        } catch (Exception e) {
+            log.error(
+                    "El pedido {} quedó LISTO, pero falló la notificación al cliente.",
+                    pedido.getId(),
+                    e
+            );
+        }
 
         return ResponseEntity.ok(pedido);
     }
 }
+
