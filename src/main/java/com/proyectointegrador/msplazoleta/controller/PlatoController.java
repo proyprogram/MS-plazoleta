@@ -43,10 +43,26 @@ public class PlatoController {
     }
 
     @PatchMapping("/{id}/estado")
-    public ResponseEntity<Plato> cambiarEstado(@PathVariable Long id, @Valid @RequestBody CambiarEstadoPlatoRequest request) {
-        Plato plato = platoServicio.cambiarEstado(id, request.getIdPropietario(), request.getActivo());
-        return ResponseEntity.ok(plato);
+    public ResponseEntity<?> cambiarEstado(
+            @PathVariable Long id,
+            @Valid @RequestBody CambiarEstadoPlatoRequest request) {
+
+        try {
+            Plato plato = platoServicio.cambiarEstado(
+                    id,
+                    request.getIdPropietario(),
+                    request.getActivo()
+            );
+
+            return ResponseEntity.ok(plato);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(e.getMessage());
+        }
     }
+
     @GetMapping
     public Page<PlatoResponseDTO> listarPlatos(
             @RequestParam Long idRestaurante,

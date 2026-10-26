@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.security.SecureRandom;
 
 @Service
 public class PedidoService {
@@ -25,6 +26,7 @@ public class PedidoService {
     private final PedidoRepository pedidoRepository;
     private final DetallePedidoRepository detallePedidoRepository;
     private final PlatoRepository platoRepository;
+    private final SecureRandom secureRandom = new SecureRandom();
 
     public PedidoService(
             PedidoRepository pedidoRepository,
@@ -107,4 +109,39 @@ public class PedidoService {
         }
         return pedidos;
     }
+
+
+    @Transactional
+    public Pedido marcarPedidoListo(Long idPedido, Long idRestauranteEmpleado) {
+
+        Pedido pedido = pedidoRepository.findById(idPedido)
+                .orElseThrow(() ->
+                        new com.proyectointegrador.msplazoleta.exception.PedidoNoEncontradoException("El pedido no existe."));
+
+        if (!pedido.getIdRestaurante().equals(idRestauranteEmpleado)) {
+            throw new SecurityException(
+                    "No puedes modificar pedidos de otro restaurante.");
+        }
+
+        if (pedido.getEstado() != EstadoPedido.EN_PREPARACION) {
+            throw new IllegalStateException(
+                    "Solo puedes marcar como listo un pedido en preparación.");
+        }
+
+        String pin = String.valueOf(secureRandom.nextInt(900000) + 100000);
+
+        pedido.setPinSeguridad(pin);
+        pedido.setEstado(EstadoPedido.LISTO);
+
+        Pedido pedidoActualizado = pedidoRepository.save(pedido);
+
+        List<DetallePedido> detalles =
+                detallePedidoRepository.findByIdPedido(pedidoActualizado.getId());
+
+        pedidoActualizado.setDetalles(detalles);
+
+        return pedidoActualizado;
+    }
+
 }
+
