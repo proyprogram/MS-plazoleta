@@ -35,6 +35,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/pedidos").hasRole("CLIENTE")
                         .requestMatchers(HttpMethod.GET, "/api/pedidos").hasAnyRole("EMPLEADO", "PROPIETARIO")
                         .requestMatchers(HttpMethod.PATCH, "/api/pedidos/**").hasRole("EMPLEADO")
+                        .requestMatchers(HttpMethod.GET, "/api/pedidos/*/trazabilidad").hasRole("CLIENTE")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(

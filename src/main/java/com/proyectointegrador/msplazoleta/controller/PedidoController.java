@@ -1,6 +1,7 @@
 package com.proyectointegrador.msplazoleta.controller;
 
 import com.proyectointegrador.msplazoleta.entity.Pedido;
+import com.proyectointegrador.msplazoleta.entity.PedidoLog;
 import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
 import com.proyectointegrador.msplazoleta.security.JwtService;
 import com.proyectointegrador.msplazoleta.service.PedidoService;
@@ -81,5 +82,21 @@ public class PedidoController {
 
         Page<Pedido> pedidos = pedidoService.listarPedidosPorRestauranteYEstado(idRestaurante, estado, pagina, cantidad);
         return ResponseEntity.ok(pedidos);
+    }
+
+    @GetMapping("/{idPedido}/trazabilidad")
+    public ResponseEntity<?> consultarTrazabilidad(
+            @PathVariable Long idPedido,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+        try {
+            String token = authorization.replace("Bearer ", "");
+            Long idCliente = jwtService.extractIdUsuario(token);
+            List<PedidoLog> historial = pedidoService.consultarTrazabilidad(idPedido, idCliente);
+            return ResponseEntity.ok(historial);
+        } catch (SecurityException error) {
+            return new ResponseEntity<>(error.getMessage(), HttpStatus.FORBIDDEN);
+        } catch (IllegalArgumentException error) {
+            return new ResponseEntity<>(error.getMessage(), HttpStatus.NOT_FOUND);
+        }
     }
 }
