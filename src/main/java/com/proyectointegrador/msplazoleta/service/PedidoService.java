@@ -201,6 +201,37 @@ public class PedidoService {
 
         return pedidoActualizado;
     }
+    // HU15: el empleado entrega un pedido validando el PIN de seguridad.
+    @Transactional
+    public Pedido entregarPedido(
+            Long idPedido,
+            Long idRestauranteEmpleado,
+            String pinIngresado) {
+
+        Pedido pedido = pedidoRepository.findById(idPedido)
+                .orElseThrow(() -> new PedidoNoEncontradoException(
+                        "El pedido no existe."));
+
+        if (!pedido.getIdRestaurante().equals(idRestauranteEmpleado)) {
+            throw new SecurityException(
+                    "No puedes entregar pedidos de otro restaurante.");
+        }
+
+        if (pedido.getEstado() != EstadoPedido.LISTO) {
+            throw new IllegalStateException(
+                    "Solo puedes entregar pedidos que estén en estado LISTO.");
+        }
+
+        if (pedido.getPinSeguridad() == null
+                || !pedido.getPinSeguridad().equals(pinIngresado)) {
+            throw new IllegalArgumentException(
+                    "El PIN de seguridad es incorrecto.");
+        }
+
+        pedido.setEstado(EstadoPedido.ENTREGADO);
+
+        return pedidoRepository.save(pedido);
+    }
 }
 
 
