@@ -1,9 +1,16 @@
 package com.proyectointegrador.msplazoleta.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "pedido")
 public class Pedido {
@@ -25,38 +32,18 @@ public class Pedido {
     @Column(nullable = false)
     private EstadoPedido estado;
 
+    // HU13: empleado que tiene asignado el pedido
     @Column(name = "id_empleado_asignado")
     private Long idEmpleadoAsignado;
 
     @Column(nullable = false)
     private Double total;
 
+    // HU14: PIN de seguridad del pedido
+    @Column(name = "pin_seguridad")
+    private String pinSeguridad;
+
     @Transient
     private List<DetallePedido> detalles;
-
-    public Pedido() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Long getIdCliente() { return idCliente; }
-    public void setIdCliente(Long idCliente) { this.idCliente = idCliente; }
-
-    public Long getIdRestaurante() { return idRestaurante; }
-    public void setIdRestaurante(Long idRestaurante) { this.idRestaurante = idRestaurante; }
-
-    public LocalDateTime getFecha() { return fecha; }
-    public void setFecha(LocalDateTime fecha) { this.fecha = fecha; }
-
-    public EstadoPedido getEstado() { return estado; }
-    public void setEstado(EstadoPedido estado) { this.estado = estado; }
-
-    public Long getIdEmpleadoAsignado() { return idEmpleadoAsignado; }
-    public void setIdEmpleadoAsignado(Long idEmpleadoAsignado) { this.idEmpleadoAsignado = idEmpleadoAsignado; }
-
-    public Double getTotal() { return total; }
-    public void setTotal(Double total) { this.total = total; }
-
-    public List<DetallePedido> getDetalles() { return detalles; }
-    public void setDetalles(List<DetallePedido> detalles) { this.detalles = detalles; }
 }
+
