@@ -166,4 +166,42 @@ public class PedidoController {
 
         return ResponseEntity.ok(pedido);
     }
+    // HU15: el empleado entrega un pedido ingresando el PIN de seguridad.
+    @PatchMapping("/{id}/entregar")
+    public ResponseEntity<?> entregarPedido(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> datos,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+
+        String token = authorization.replace("Bearer ", "");
+        String rol = jwtService.extractRol(token);
+
+        if (!"EMPLEADO".equals(rol)) {
+            throw new SecurityException(
+                    "Solo un empleado puede entregar pedidos.");
+        }
+
+        Long idRestauranteEmpleado =
+                jwtService.extractIdRestaurante(token);
+
+        if (idRestauranteEmpleado == null) {
+            throw new SecurityException(
+                    "El empleado no tiene un restaurante asociado.");
+        }
+
+        String pin = datos.get("pin");
+
+        if (pin == null || pin.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Debes ingresar el PIN de seguridad.");
+        }
+
+        Pedido pedido = pedidoService.entregarPedido(
+                id,
+                idRestauranteEmpleado,
+                pin
+        );
+
+        return ResponseEntity.ok(pedido);
+    }
 }
