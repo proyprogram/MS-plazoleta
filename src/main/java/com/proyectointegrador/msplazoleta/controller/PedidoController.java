@@ -123,6 +123,19 @@ public class PedidoController {
         return ResponseEntity.ok(pedidos);
     }
 
+    // HU17: el cliente consulta la trazabilidad de su pedido.
+    @GetMapping("/{idPedido}/trazabilidad")
+    public ResponseEntity<?> consultarTrazabilidad(
+            @PathVariable Long idPedido,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+
+        String token = authorization.replace("Bearer ", "");
+        Long idCliente = jwtService.extractIdUsuario(token);
+
+        return ResponseEntity.ok(
+                pedidoService.consultarTrazabilidad(idPedido, idCliente));
+    }
+
     @PatchMapping("/{id}/listo")
     public ResponseEntity<?> marcarPedidoListo(
             @PathVariable Long id,
@@ -146,9 +159,12 @@ public class PedidoController {
             );
         }
 
+        Long idEmpleado = jwtService.extractIdUsuario(token);
+
         Pedido pedido = pedidoService.marcarPedidoListo(
                 id,
-                idRestauranteEmpleado
+                idRestauranteEmpleado,
+                idEmpleado
         );
 
         try {
@@ -196,9 +212,12 @@ public class PedidoController {
                     "Debes ingresar el PIN de seguridad.");
         }
 
+        Long idEmpleado = jwtService.extractIdUsuario(token);
+
         Pedido pedido = pedidoService.entregarPedido(
                 id,
                 idRestauranteEmpleado,
+                idEmpleado,
                 pin
         );
 
