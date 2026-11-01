@@ -28,15 +28,18 @@ public class PedidoService {
     private final PedidoRepository pedidoRepository;
     private final DetallePedidoRepository detallePedidoRepository;
     private final PlatoRepository platoRepository;
+    private final PedidoLogService pedidoLogService;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public PedidoService(
             PedidoRepository pedidoRepository,
             DetallePedidoRepository detallePedidoRepository,
-            PlatoRepository platoRepository) {
+            PlatoRepository platoRepository,
+            PedidoLogService pedidoLogService) {
         this.pedidoRepository = pedidoRepository;
         this.detallePedidoRepository = detallePedidoRepository;
         this.platoRepository = platoRepository;
+        this.pedidoLogService = pedidoLogService;
     }
 
     @Transactional
@@ -107,6 +110,7 @@ public class PedidoService {
         nuevoPedido.setTotal(total);
 
         Pedido pedidoGuardado = pedidoRepository.save(nuevoPedido);
+        pedidoLogService.registrar(pedidoGuardado.getId(), null, EstadoPedido.PENDIENTE, idCliente);
 
         for (DetallePedido detalle : detallesConfirmados) {
             detalle.setIdPedido(pedidoGuardado.getId());
@@ -115,6 +119,30 @@ public class PedidoService {
 
         pedidoGuardado.setDetalles(detallesConfirmados);
         return pedidoGuardado;
+    }
+
+    // HU16: el cliente cancela su pedido solo si esta pendiente.
+    @Transactional
+    public Pedido cancelarPedido(Long idPedido, Long idCliente) {
+        Pedido pedido = pedidoRepository.findById(idPedido)
+                .orElseThrow(() -> new PedidoNoEncontradoException(
+                        "El pedido con id " + idPedido + " no existe."));
+
+        if (!pedido.getIdCliente().equals(idCliente)) {
+            throw new SecurityException(
+                    "Solo puedes cancelar tus propios pedidos.");
+        }
+
+        if (pedido.getEstado() != EstadoPedido.PENDIENTE) {
+            throw new IllegalStateException(
+                    "Lo sentimos, tu pedido ya está en preparación y no puede cancelarse.");
+        }
+
+        EstadoPedido estadoAnterior = pedido.getEstado();
+        pedido.setEstado(EstadoPedido.CANCELADO);
+        Pedido guardado = pedidoRepository.save(pedido);
+        pedidoLogService.registrar(guardado.getId(), estadoAnterior, EstadoPedido.CANCELADO, idCliente);
+        return guardado;
     }
 
     public Page<Pedido> listarPedidosPorRestauranteYEstado(
@@ -162,14 +190,17 @@ public class PedidoService {
         pedido.setIdEmpleadoAsignado(idEmpleado);
         pedido.setEstado(EstadoPedido.EN_PREPARACION);
 
-        return pedidoRepository.save(pedido);
+        Pedido guardado = pedidoRepository.save(pedido);
+        pedidoLogService.registrar(guardado.getId(), EstadoPedido.PENDIENTE, EstadoPedido.EN_PREPARACION, idEmpleado);
+        return guardado;
     }
 
     // HU14: el empleado marca como listo un pedido en preparación.
     @Transactional
     public Pedido marcarPedidoListo(
             Long idPedido,
-            Long idRestauranteEmpleado) {
+            Long idRestauranteEmpleado,
+            Long idEmpleado) {
 
         Pedido pedido = pedidoRepository.findById(idPedido)
                 .orElseThrow(() -> new PedidoNoEncontradoException(
@@ -192,6 +223,7 @@ public class PedidoService {
         pedido.setEstado(EstadoPedido.LISTO);
 
         Pedido pedidoActualizado = pedidoRepository.save(pedido);
+        pedidoLogService.registrar(pedidoActualizado.getId(), EstadoPedido.EN_PREPARACION, EstadoPedido.LISTO, idEmpleado);
 
         List<DetallePedido> detalles =
                 detallePedidoRepository.findByIdPedido(
@@ -206,6 +238,7 @@ public class PedidoService {
     public Pedido entregarPedido(
             Long idPedido,
             Long idRestauranteEmpleado,
+            Long idEmpleado,
             String pinIngresado) {
 
         Pedido pedido = pedidoRepository.findById(idPedido)
@@ -230,7 +263,9 @@ public class PedidoService {
 
         pedido.setEstado(EstadoPedido.ENTREGADO);
 
-        return pedidoRepository.save(pedido);
+        Pedido entregado = pedidoRepository.save(pedido);
+        pedidoLogService.registrar(entregado.getId(), EstadoPedido.LISTO, EstadoPedido.ENTREGADO, idEmpleado);
+        return entregado;
     }
 }
 
