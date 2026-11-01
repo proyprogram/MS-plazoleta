@@ -136,6 +136,19 @@ public class PedidoController {
         return ResponseEntity.ok(pedidos);
     }
 
+    // HU17: el cliente consulta la trazabilidad de su pedido.
+    @GetMapping("/{idPedido}/trazabilidad")
+    public ResponseEntity<?> consultarTrazabilidad(
+            @PathVariable Long idPedido,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+
+        String token = authorization.replace("Bearer ", "");
+        Long idCliente = jwtService.extractIdUsuario(token);
+
+        return ResponseEntity.ok(
+                pedidoService.consultarTrazabilidad(idPedido, idCliente));
+    }
+
     @PatchMapping("/{id}/listo")
     public ResponseEntity<?> marcarPedidoListo(
             @PathVariable Long id,

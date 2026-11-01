@@ -3,6 +3,7 @@ package com.proyectointegrador.msplazoleta.service;
 import com.proyectointegrador.msplazoleta.entity.DetallePedido;
 import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
 import com.proyectointegrador.msplazoleta.entity.Pedido;
+import com.proyectointegrador.msplazoleta.entity.PedidoLog;
 import com.proyectointegrador.msplazoleta.entity.Plato;
 import com.proyectointegrador.msplazoleta.exception.PedidoNoEncontradoException;
 import com.proyectointegrador.msplazoleta.repository.DetallePedidoRepository;
@@ -165,6 +166,20 @@ public class PedidoService {
         }
 
         return pedidos;
+    }
+
+    // HU17: el cliente consulta el historial de cambios de estado de su pedido.
+    public List<PedidoLog> consultarTrazabilidad(Long idPedido, Long idCliente) {
+        Pedido pedido = pedidoRepository.findById(idPedido)
+                .orElseThrow(() -> new PedidoNoEncontradoException(
+                        "El pedido con id " + idPedido + " no existe."));
+
+        if (!pedido.getIdCliente().equals(idCliente)) {
+            throw new SecurityException(
+                    "Solo puedes consultar el historial de tus propios pedidos.");
+        }
+
+        return pedidoLogService.historial(idPedido);
     }
 
     @Transactional
