@@ -89,6 +89,19 @@ public class PedidoController {
         }
     }
 
+    // HU16: el cliente cancela su pedido (solo si esta pendiente).
+    @PatchMapping("/{idPedido}/cancelar")
+    public ResponseEntity<?> cancelarPedido(
+            @PathVariable Long idPedido,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+
+        String token = authorization.replace("Bearer ", "");
+        Long idCliente = jwtService.extractIdUsuario(token);
+
+        return ResponseEntity.ok(
+                pedidoService.cancelarPedido(idPedido, idCliente));
+    }
+
     @GetMapping
     public ResponseEntity<?> listarPedidos(
             @RequestParam Long idRestaurante,
@@ -146,9 +159,12 @@ public class PedidoController {
             );
         }
 
+        Long idEmpleado = jwtService.extractIdUsuario(token);
+
         Pedido pedido = pedidoService.marcarPedidoListo(
                 id,
-                idRestauranteEmpleado
+                idRestauranteEmpleado,
+                idEmpleado
         );
 
         try {
@@ -196,9 +212,12 @@ public class PedidoController {
                     "Debes ingresar el PIN de seguridad.");
         }
 
+        Long idEmpleado = jwtService.extractIdUsuario(token);
+
         Pedido pedido = pedidoService.entregarPedido(
                 id,
                 idRestauranteEmpleado,
+                idEmpleado,
                 pin
         );
 
