@@ -3,11 +3,8 @@ package com.proyectointegrador.msplazoleta.controller;
 import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
 import com.proyectointegrador.msplazoleta.entity.Pedido;
 import com.proyectointegrador.msplazoleta.security.JwtService;
-import com.proyectointegrador.msplazoleta.service.NotificacionService;
 import com.proyectointegrador.msplazoleta.service.PedidoService;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -21,20 +18,14 @@ import java.util.Map;
 @RequestMapping("/api/pedidos")
 public class PedidoController {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(PedidoController.class);
-
     private final PedidoService pedidoService;
     private final JwtService jwtService;
-    private final NotificacionService notificacionService;
 
     public PedidoController(
             PedidoService pedidoService,
-            JwtService jwtService,
-            NotificacionService notificacionService) {
+            JwtService jwtService) {
         this.pedidoService = pedidoService;
         this.jwtService = jwtService;
-        this.notificacionService = notificacionService;
     }
 
     @PostMapping
@@ -174,27 +165,18 @@ public class PedidoController {
 
         Long idEmpleado = jwtService.extractIdUsuario(token);
 
+        // La notificacion SMS ahora la dispara el NotificacionObserver dentro
+        // de PedidoService, automaticamente al cambiar el estado a LISTO.
         Pedido pedido = pedidoService.marcarPedidoListo(
                 id,
                 idRestauranteEmpleado,
-                idEmpleado
+                idEmpleado,
+                authorization
         );
-
-        try {
-            notificacionService.notificarPedidoListo(
-                    pedido,
-                    authorization
-            );
-        } catch (Exception e) {
-            log.error(
-                    "El pedido {} quedó LISTO, pero falló la notificación al cliente.",
-                    pedido.getId(),
-                    e
-            );
-        }
 
         return ResponseEntity.ok(pedido);
     }
+
     // HU15: el empleado entrega un pedido ingresando el PIN de seguridad.
     @PatchMapping("/{id}/entregar")
     public ResponseEntity<?> entregarPedido(

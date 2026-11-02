@@ -28,6 +28,8 @@ public class PlatoServicio {
             throw new IllegalArgumentException("El restaurante no existe");
         if (!restaurante.getIdPropietario().equals(idPropietario))
             throw new IllegalArgumentException("Solo el propietario del restaurante puede crear platos");
+        if (platoRepository.existsByNombreIgnoreCaseAndRestaurante_Id(nombre, idRestaurante))
+            throw new IllegalStateException("Ya existe un plato con este nombre en este restaurante");
 
         Plato plato = Plato.builder()
                 .nombre(nombre)
