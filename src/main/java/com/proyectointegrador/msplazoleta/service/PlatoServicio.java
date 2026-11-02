@@ -93,4 +93,23 @@ public class PlatoServicio {
                         .build()
         );
     }
+
+    public Plato modificarPlato(Long idPlato, Integer nuevoPrecio, String nuevaDescripcion, Long idPropietario) {
+        Plato plato = platoRepository.findById(idPlato)
+                .orElseThrow(() -> new IllegalArgumentException("El plato indicado no existe"));
+
+        if (!plato.getRestaurante().getIdPropietario().equals(idPropietario)) {
+            throw new IllegalStateException("Solo el propietario del restaurante puede modificar este plato");
+        }
+
+        if (!plato.isActivo()) {
+            throw new IllegalStateException("No se puede modificar un plato inactivo");
+        }
+
+        plato.setPrecio(nuevoPrecio);
+        plato.setDescripcion(nuevaDescripcion);
+
+        return platoRepository.save(plato);
+    }
+
 }

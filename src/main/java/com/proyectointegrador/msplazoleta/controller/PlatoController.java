@@ -77,4 +77,16 @@ public class PlatoController {
                 cantidad
         );
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Plato> modificar(@PathVariable Long id, @Valid @RequestBody com.proyectointegrador.msplazoleta.dto.request.ModificarPlatoRequest request) {
+        Plato plato = platoServicio.modificarPlato(
+                id,
+                request.getPrecio(),
+                request.getDescripcion(),
+                request.getIdPropietario()
+        );
+        return ResponseEntity.ok(plato);
+    }
+
 }
