@@ -47,20 +47,13 @@ public class PlatoController {
             @PathVariable Long id,
             @Valid @RequestBody CambiarEstadoPlatoRequest request) {
 
-        try {
-            Plato plato = platoServicio.cambiarEstado(
-                    id,
-                    request.getIdPropietario(),
-                    request.getActivo()
-            );
+        Plato plato = platoServicio.cambiarEstado(
+                id,
+                request.getIdPropietario(),
+                request.getActivo()
+        );
 
-            return ResponseEntity.ok(plato);
-
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity
-                    .status(HttpStatus.FORBIDDEN)
-                    .body(e.getMessage());
-        }
+        return ResponseEntity.ok(plato);
     }
 
     @GetMapping
@@ -77,4 +70,16 @@ public class PlatoController {
                 cantidad
         );
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Plato> modificar(@PathVariable Long id, @Valid @RequestBody com.proyectointegrador.msplazoleta.dto.request.ModificarPlatoRequest request) {
+        Plato plato = platoServicio.modificarPlato(
+                id,
+                request.getPrecio(),
+                request.getDescripcion(),
+                request.getIdPropietario()
+        );
+        return ResponseEntity.ok(plato);
+    }
+
 }

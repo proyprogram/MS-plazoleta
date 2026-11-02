@@ -6,6 +6,7 @@ import com.proyectointegrador.msplazoleta.entity.Pedido;
 import com.proyectointegrador.msplazoleta.entity.PedidoLog;
 import com.proyectointegrador.msplazoleta.entity.Plato;
 import com.proyectointegrador.msplazoleta.exception.PedidoNoEncontradoException;
+import com.proyectointegrador.msplazoleta.observer.PedidoEstadoObserver;
 import com.proyectointegrador.msplazoleta.repository.DetallePedidoRepository;
 import com.proyectointegrador.msplazoleta.repository.PedidoRepository;
 import com.proyectointegrador.msplazoleta.repository.PlatoRepository;
@@ -30,17 +31,34 @@ public class PedidoService {
     private final DetallePedidoRepository detallePedidoRepository;
     private final PlatoRepository platoRepository;
     private final PedidoLogService pedidoLogService;
+    private final List<PedidoEstadoObserver> observers;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public PedidoService(
             PedidoRepository pedidoRepository,
             DetallePedidoRepository detallePedidoRepository,
             PlatoRepository platoRepository,
-            PedidoLogService pedidoLogService) {
+            PedidoLogService pedidoLogService,
+            List<PedidoEstadoObserver> observers) {
         this.pedidoRepository = pedidoRepository;
         this.detallePedidoRepository = detallePedidoRepository;
         this.platoRepository = platoRepository;
         this.pedidoLogService = pedidoLogService;
+        this.observers = observers;
+    }
+
+    // Patron Observer: notifica a todos los observadores registrados
+    // (trazabilidad, notificaciones, etc.) cada vez que un pedido cambia de estado.
+    private void notificarCambioEstado(
+            Pedido pedido,
+            EstadoPedido estadoAnterior,
+            EstadoPedido estadoNuevo,
+            Long idActor,
+            String token) {
+
+        for (PedidoEstadoObserver observer : observers) {
+            observer.onCambioEstado(pedido, estadoAnterior, estadoNuevo, idActor, token);
+        }
     }
 
     @Transactional
@@ -111,7 +129,7 @@ public class PedidoService {
         nuevoPedido.setTotal(total);
 
         Pedido pedidoGuardado = pedidoRepository.save(nuevoPedido);
-        pedidoLogService.registrar(pedidoGuardado.getId(), null, EstadoPedido.PENDIENTE, idCliente);
+        notificarCambioEstado(pedidoGuardado, null, EstadoPedido.PENDIENTE, idCliente, null);
 
         for (DetallePedido detalle : detallesConfirmados) {
             detalle.setIdPedido(pedidoGuardado.getId());
@@ -142,7 +160,7 @@ public class PedidoService {
         EstadoPedido estadoAnterior = pedido.getEstado();
         pedido.setEstado(EstadoPedido.CANCELADO);
         Pedido guardado = pedidoRepository.save(pedido);
-        pedidoLogService.registrar(guardado.getId(), estadoAnterior, EstadoPedido.CANCELADO, idCliente);
+        notificarCambioEstado(guardado, estadoAnterior, EstadoPedido.CANCELADO, idCliente, null);
         return guardado;
     }
 
@@ -206,7 +224,7 @@ public class PedidoService {
         pedido.setEstado(EstadoPedido.EN_PREPARACION);
 
         Pedido guardado = pedidoRepository.save(pedido);
-        pedidoLogService.registrar(guardado.getId(), EstadoPedido.PENDIENTE, EstadoPedido.EN_PREPARACION, idEmpleado);
+        notificarCambioEstado(guardado, EstadoPedido.PENDIENTE, EstadoPedido.EN_PREPARACION, idEmpleado, null);
         return guardado;
     }
 
@@ -215,7 +233,8 @@ public class PedidoService {
     public Pedido marcarPedidoListo(
             Long idPedido,
             Long idRestauranteEmpleado,
-            Long idEmpleado) {
+            Long idEmpleado,
+            String token) {
 
         Pedido pedido = pedidoRepository.findById(idPedido)
                 .orElseThrow(() -> new PedidoNoEncontradoException(
@@ -238,7 +257,7 @@ public class PedidoService {
         pedido.setEstado(EstadoPedido.LISTO);
 
         Pedido pedidoActualizado = pedidoRepository.save(pedido);
-        pedidoLogService.registrar(pedidoActualizado.getId(), EstadoPedido.EN_PREPARACION, EstadoPedido.LISTO, idEmpleado);
+        notificarCambioEstado(pedidoActualizado, EstadoPedido.EN_PREPARACION, EstadoPedido.LISTO, idEmpleado, token);
 
         List<DetallePedido> detalles =
                 detallePedidoRepository.findByIdPedido(
@@ -248,6 +267,7 @@ public class PedidoService {
 
         return pedidoActualizado;
     }
+
     // HU15: el empleado entrega un pedido validando el PIN de seguridad.
     @Transactional
     public Pedido entregarPedido(
@@ -279,9 +299,7 @@ public class PedidoService {
         pedido.setEstado(EstadoPedido.ENTREGADO);
 
         Pedido entregado = pedidoRepository.save(pedido);
-        pedidoLogService.registrar(entregado.getId(), EstadoPedido.LISTO, EstadoPedido.ENTREGADO, idEmpleado);
+        notificarCambioEstado(entregado, EstadoPedido.LISTO, EstadoPedido.ENTREGADO, idEmpleado, null);
         return entregado;
     }
 }
-
-

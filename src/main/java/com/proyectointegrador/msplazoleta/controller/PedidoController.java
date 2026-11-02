@@ -3,11 +3,10 @@ package com.proyectointegrador.msplazoleta.controller;
 import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
 import com.proyectointegrador.msplazoleta.entity.Pedido;
 import com.proyectointegrador.msplazoleta.security.JwtService;
-import com.proyectointegrador.msplazoleta.service.NotificacionService;
 import com.proyectointegrador.msplazoleta.service.PedidoService;
+import com.proyectointegrador.msplazoleta.entity.Restaurante;
+import com.proyectointegrador.msplazoleta.repository.RestauranteRepository;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -21,20 +20,17 @@ import java.util.Map;
 @RequestMapping("/api/pedidos")
 public class PedidoController {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(PedidoController.class);
-
     private final PedidoService pedidoService;
     private final JwtService jwtService;
-    private final NotificacionService notificacionService;
+    private final RestauranteRepository restauranteRepository;
 
     public PedidoController(
             PedidoService pedidoService,
             JwtService jwtService,
-            NotificacionService notificacionService) {
+            RestauranteRepository restauranteRepository) {
         this.pedidoService = pedidoService;
         this.jwtService = jwtService;
-        this.notificacionService = notificacionService;
+        this.restauranteRepository = restauranteRepository;
     }
 
     @PostMapping
@@ -62,31 +58,18 @@ public class PedidoController {
             @PathVariable Long id,
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
 
-        try {
-            String token = authorization.replace("Bearer ", "");
-            Long idEmpleado = jwtService.extractIdUsuario(token);
-            Long idRestauranteEmpleado =
-                    jwtService.extractIdRestaurante(token);
+        String token = authorization.replace("Bearer ", "");
+        Long idEmpleado = jwtService.extractIdUsuario(token);
+        Long idRestauranteEmpleado =
+                jwtService.extractIdRestaurante(token);
 
-            Pedido pedido = pedidoService.asignarPedido(
-                    id,
-                    idEmpleado,
-                    idRestauranteEmpleado
-            );
+        Pedido pedido = pedidoService.asignarPedido(
+                id,
+                idEmpleado,
+                idRestauranteEmpleado
+        );
 
-            return ResponseEntity.ok(pedido);
-
-        } catch (IllegalArgumentException error) {
-            return new ResponseEntity<>(
-                    error.getMessage(),
-                    HttpStatus.BAD_REQUEST
-            );
-        } catch (IllegalStateException error) {
-            return new ResponseEntity<>(
-                    error.getMessage(),
-                    HttpStatus.CONFLICT
-            );
-        }
+        return ResponseEntity.ok(pedido);
     }
 
     // HU16: el cliente cancela su pedido (solo si esta pendiente).
@@ -121,6 +104,16 @@ public class PedidoController {
                     || !idRestauranteEmpleado.equals(idRestaurante)) {
                 throw new SecurityException(
                         "Solo puedes consultar los pedidos del restaurante al que perteneces."
+                );
+            }
+        } else if ("PROPIETARIO".equals(rol)) {
+            Long idPropietarioToken = jwtService.extractIdUsuario(token);
+            Restaurante restaurante = restauranteRepository.findById(idRestaurante)
+                    .orElseThrow(() -> new IllegalArgumentException("El restaurante indicado no existe"));
+
+            if (!restaurante.getIdPropietario().equals(idPropietarioToken)) {
+                throw new SecurityException(
+                        "Solo puedes consultar los pedidos de tu propio restaurante."
                 );
             }
         }
@@ -174,27 +167,18 @@ public class PedidoController {
 
         Long idEmpleado = jwtService.extractIdUsuario(token);
 
+        // La notificacion SMS ahora la dispara el NotificacionObserver dentro
+        // de PedidoService, automaticamente al cambiar el estado a LISTO.
         Pedido pedido = pedidoService.marcarPedidoListo(
                 id,
                 idRestauranteEmpleado,
-                idEmpleado
+                idEmpleado,
+                authorization
         );
-
-        try {
-            notificacionService.notificarPedidoListo(
-                    pedido,
-                    authorization
-            );
-        } catch (Exception e) {
-            log.error(
-                    "El pedido {} quedó LISTO, pero falló la notificación al cliente.",
-                    pedido.getId(),
-                    e
-            );
-        }
 
         return ResponseEntity.ok(pedido);
     }
+
     // HU15: el empleado entrega un pedido ingresando el PIN de seguridad.
     @PatchMapping("/{id}/entregar")
     public ResponseEntity<?> entregarPedido(
