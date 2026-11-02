@@ -47,20 +47,13 @@ public class PlatoController {
             @PathVariable Long id,
             @Valid @RequestBody CambiarEstadoPlatoRequest request) {
 
-        try {
-            Plato plato = platoServicio.cambiarEstado(
-                    id,
-                    request.getIdPropietario(),
-                    request.getActivo()
-            );
+        Plato plato = platoServicio.cambiarEstado(
+                id,
+                request.getIdPropietario(),
+                request.getActivo()
+        );
 
-            return ResponseEntity.ok(plato);
-
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity
-                    .status(HttpStatus.FORBIDDEN)
-                    .body(e.getMessage());
-        }
+        return ResponseEntity.ok(plato);
     }
 
     @GetMapping
