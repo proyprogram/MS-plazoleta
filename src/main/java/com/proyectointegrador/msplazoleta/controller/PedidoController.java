@@ -4,6 +4,8 @@ import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
 import com.proyectointegrador.msplazoleta.entity.Pedido;
 import com.proyectointegrador.msplazoleta.security.JwtService;
 import com.proyectointegrador.msplazoleta.service.PedidoService;
+import com.proyectointegrador.msplazoleta.entity.Restaurante;
+import com.proyectointegrador.msplazoleta.repository.RestauranteRepository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
@@ -20,12 +22,15 @@ public class PedidoController {
 
     private final PedidoService pedidoService;
     private final JwtService jwtService;
+    private final RestauranteRepository restauranteRepository;
 
     public PedidoController(
             PedidoService pedidoService,
-            JwtService jwtService) {
+            JwtService jwtService,
+            RestauranteRepository restauranteRepository) {
         this.pedidoService = pedidoService;
         this.jwtService = jwtService;
+        this.restauranteRepository = restauranteRepository;
     }
 
     @PostMapping
@@ -99,6 +104,16 @@ public class PedidoController {
                     || !idRestauranteEmpleado.equals(idRestaurante)) {
                 throw new SecurityException(
                         "Solo puedes consultar los pedidos del restaurante al que perteneces."
+                );
+            }
+        } else if ("PROPIETARIO".equals(rol)) {
+            Long idPropietarioToken = jwtService.extractIdUsuario(token);
+            Restaurante restaurante = restauranteRepository.findById(idRestaurante)
+                    .orElseThrow(() -> new IllegalArgumentException("El restaurante indicado no existe"));
+
+            if (!restaurante.getIdPropietario().equals(idPropietarioToken)) {
+                throw new SecurityException(
+                        "Solo puedes consultar los pedidos de tu propio restaurante."
                 );
             }
         }
