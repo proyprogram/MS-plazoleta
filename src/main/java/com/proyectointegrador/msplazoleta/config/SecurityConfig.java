@@ -27,6 +27,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/restaurantes/**", "/api/platos/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/restaurantes").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.POST, "/api/empleados").hasRole("PROPIETARIO")
