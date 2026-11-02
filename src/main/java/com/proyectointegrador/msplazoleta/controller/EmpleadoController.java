@@ -26,14 +26,4 @@ public class EmpleadoController {
         Map response = empleadoServicio.crearEmpleado(request, authorization);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleNotFound(IllegalArgumentException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
-
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<String> handleForbidden(IllegalStateException ex) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
-    }
 }

@@ -53,31 +53,18 @@ public class PedidoController {
             @PathVariable Long id,
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
 
-        try {
-            String token = authorization.replace("Bearer ", "");
-            Long idEmpleado = jwtService.extractIdUsuario(token);
-            Long idRestauranteEmpleado =
-                    jwtService.extractIdRestaurante(token);
+        String token = authorization.replace("Bearer ", "");
+        Long idEmpleado = jwtService.extractIdUsuario(token);
+        Long idRestauranteEmpleado =
+                jwtService.extractIdRestaurante(token);
 
-            Pedido pedido = pedidoService.asignarPedido(
-                    id,
-                    idEmpleado,
-                    idRestauranteEmpleado
-            );
+        Pedido pedido = pedidoService.asignarPedido(
+                id,
+                idEmpleado,
+                idRestauranteEmpleado
+        );
 
-            return ResponseEntity.ok(pedido);
-
-        } catch (IllegalArgumentException error) {
-            return new ResponseEntity<>(
-                    error.getMessage(),
-                    HttpStatus.BAD_REQUEST
-            );
-        } catch (IllegalStateException error) {
-            return new ResponseEntity<>(
-                    error.getMessage(),
-                    HttpStatus.CONFLICT
-            );
-        }
+        return ResponseEntity.ok(pedido);
     }
 
     // HU16: el cliente cancela su pedido (solo si esta pendiente).
