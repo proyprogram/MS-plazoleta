@@ -17,7 +17,9 @@ public class ModificarPlatoRequest {
     @NotBlank
     private String descripcion;
 
-    @NotNull
-    @Positive
+    /**
+     * Se mantiene por compatibilidad, pero se ignora: el id del propietario
+     * siempre se toma del token JWT, nunca del body.
+     */
     private Long idPropietario;
 }

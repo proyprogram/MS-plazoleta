@@ -8,7 +8,10 @@ import lombok.Setter;
 @Setter
 public class CambiarEstadoPlatoRequest {
 
-    @NotNull(message = "El id del propietario es obligatorio")
+    /**
+     * Se mantiene por compatibilidad, pero se ignora: el id del propietario
+     * siempre se toma del token JWT, nunca del body.
+     */
     private Long idPropietario;
 
     @NotNull(message = "El estado (activo) es obligatorio")
