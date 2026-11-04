@@ -15,5 +15,13 @@ public interface PlatoRepository extends JpaRepository<Plato, Long> {
             Pageable pageable
     );
 
+    Page<Plato> findByRestaurante_IdAndActivoTrue(Long idRestaurante, Pageable pageable);
+
+    Page<Plato> findByRestaurante_IdAndCategoriaIgnoreCaseAndActivoTrue(
+            Long idRestaurante,
+            String categoria,
+            Pageable pageable
+    );
+
     boolean existsByNombreIgnoreCaseAndRestaurante_Id(String nombre, Long idRestaurante);
 }

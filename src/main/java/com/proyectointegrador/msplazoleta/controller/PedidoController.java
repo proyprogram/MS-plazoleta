@@ -1,5 +1,6 @@
 package com.proyectointegrador.msplazoleta.controller;
 
+import com.proyectointegrador.msplazoleta.dto.request.CrearPedidoRequest;
 import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
 import com.proyectointegrador.msplazoleta.entity.Pedido;
 import com.proyectointegrador.msplazoleta.security.JwtService;
@@ -7,13 +8,13 @@ import com.proyectointegrador.msplazoleta.service.PedidoService;
 import com.proyectointegrador.msplazoleta.entity.Restaurante;
 import com.proyectointegrador.msplazoleta.repository.RestauranteRepository;
 
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -35,19 +36,16 @@ public class PedidoController {
 
     @PostMapping
     public ResponseEntity<?> crearPedido(
-            @RequestBody Map<String, Object> datos) {
+            @Valid @RequestBody CrearPedidoRequest request,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
 
-        Long idCliente = ((Number) datos.get("idCliente")).longValue();
-        Long idRestaurante = ((Number) datos.get("idRestaurante")).longValue();
-
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> platos =
-                (List<Map<String, Object>>) datos.get("platos");
+        String token = authorization.replace("Bearer ", "");
+        Long idCliente = jwtService.extractIdUsuario(token);
 
         Pedido pedido = pedidoService.crearPedido(
                 idCliente,
-                idRestaurante,
-                platos
+                request.getIdRestaurante(),
+                request.getPlatos()
         );
 
         return new ResponseEntity<>(pedido, HttpStatus.CREATED);

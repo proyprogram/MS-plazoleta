@@ -1,5 +1,6 @@
 package com.proyectointegrador.msplazoleta.service;
 
+import com.proyectointegrador.msplazoleta.dto.request.PlatoPedidoRequest;
 import com.proyectointegrador.msplazoleta.entity.DetallePedido;
 import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
 import com.proyectointegrador.msplazoleta.entity.Pedido;
@@ -21,7 +22,6 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -65,7 +65,7 @@ public class PedidoService {
     public Pedido crearPedido(
             Long idCliente,
             Long idRestaurante,
-            List<Map<String, Object>> platosSolicitados) {
+            List<PlatoPedidoRequest> platosSolicitados) {
 
         EstadoPedido[] estadosActivos = {
                 EstadoPedido.PENDIENTE,
@@ -90,9 +90,9 @@ public class PedidoService {
         List<DetallePedido> detallesConfirmados = new ArrayList<>();
         Double total = 0.0;
 
-        for (Map<String, Object> solicitud : platosSolicitados) {
-            Long idPlato = ((Number) solicitud.get("idPlato")).longValue();
-            Integer cantidad = ((Number) solicitud.get("cantidad")).intValue();
+        for (PlatoPedidoRequest solicitud : platosSolicitados) {
+            Long idPlato = solicitud.getIdPlato();
+            Integer cantidad = solicitud.getCantidad();
 
             Optional<Plato> platoOpt = platoRepository.findById(idPlato);
 
@@ -102,6 +102,13 @@ public class PedidoService {
             }
 
             Plato platoReal = platoOpt.get();
+
+            if (!platoReal.isActivo()) {
+                throw new IllegalArgumentException(
+                        "El plato '" + platoReal.getNombre()
+                                + "' no está disponible actualmente.");
+            }
+
             Long idRestauranteDelPlato =
                     platoReal.getRestaurante().getId();
 
@@ -207,11 +214,11 @@ public class PedidoService {
             Long idRestauranteEmpleado) {
 
         Pedido pedido = pedidoRepository.findById(idPedido)
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new PedidoNoEncontradoException(
                         "El pedido con id " + idPedido + " no existe."));
 
         if (!pedido.getIdRestaurante().equals(idRestauranteEmpleado)) {
-            throw new IllegalArgumentException(
+            throw new SecurityException(
                     "No puedes asignarte un pedido de otro restaurante.");
         }
 

@@ -12,7 +12,13 @@ public class CrearEmpleadoRequest {
     @NotNull
     private Long idRestaurante;
 
-    @NotNull
+    @NotNull(message = "El id del rol es obligatorio")
+    private Long idRol;
+
+    /**
+     * Se mantiene por compatibilidad, pero se ignora: el propietario que
+     * ejecuta la acción siempre se identifica a partir del token JWT.
+     */
     private Long idPropietario;
 
     @NotBlank

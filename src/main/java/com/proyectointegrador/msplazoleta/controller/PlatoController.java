@@ -6,12 +6,14 @@ import com.proyectointegrador.msplazoleta.dto.request.CrearPlatoRequest;
 import com.proyectointegrador.msplazoleta.entity.Plato;
 import com.proyectointegrador.msplazoleta.service.PlatoServicio;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.data.domain.Page;
@@ -29,7 +31,10 @@ public class PlatoController {
     }
 
     @PostMapping
-    public ResponseEntity<Plato> crear(@Valid @RequestBody CrearPlatoRequest request) {
+    public ResponseEntity<Plato> crear(
+            @Valid @RequestBody CrearPlatoRequest request,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+
         Plato plato = platoServicio.crearPlato(
                 request.getNombre(),
                 request.getPrecio(),
@@ -37,7 +42,7 @@ public class PlatoController {
                 request.getUrlImagen(),
                 request.getCategoria(),
                 request.getIdRestaurante(),
-                request.getIdPropietario()
+                authorization
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(plato);
     }
@@ -45,11 +50,12 @@ public class PlatoController {
     @PatchMapping("/{id}/estado")
     public ResponseEntity<?> cambiarEstado(
             @PathVariable Long id,
-            @Valid @RequestBody CambiarEstadoPlatoRequest request) {
+            @Valid @RequestBody CambiarEstadoPlatoRequest request,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
 
         Plato plato = platoServicio.cambiarEstado(
                 id,
-                request.getIdPropietario(),
+                authorization,
                 request.getActivo()
         );
 
@@ -72,12 +78,16 @@ public class PlatoController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Plato> modificar(@PathVariable Long id, @Valid @RequestBody com.proyectointegrador.msplazoleta.dto.request.ModificarPlatoRequest request) {
+    public ResponseEntity<Plato> modificar(
+            @PathVariable Long id,
+            @Valid @RequestBody com.proyectointegrador.msplazoleta.dto.request.ModificarPlatoRequest request,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+
         Plato plato = platoServicio.modificarPlato(
                 id,
                 request.getPrecio(),
                 request.getDescripcion(),
-                request.getIdPropietario()
+                authorization
         );
         return ResponseEntity.ok(plato);
     }
