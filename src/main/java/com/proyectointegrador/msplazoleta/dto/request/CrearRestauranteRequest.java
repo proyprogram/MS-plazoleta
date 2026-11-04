@@ -12,6 +12,8 @@ import lombok.Setter;
 public class CrearRestauranteRequest {
 
     @NotBlank(message = "El nombre es obligatorio")
+    @Pattern(regexp = "^(?=.*[^0-9\\s]).+$",
+            message = "El nombre del restaurante puede contener números, pero no puede ser solo números")
     private String nombre;
 
     @NotBlank(message = "El NIT es obligatorio")
@@ -28,6 +30,7 @@ public class CrearRestauranteRequest {
     )
     private String telefono;
 
+    @NotBlank(message = "La URL del logo es obligatoria")
     private String urlLogo;
 
     @NotNull(message = "El id del propietario es obligatorio")
