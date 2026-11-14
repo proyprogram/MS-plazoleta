@@ -291,6 +291,10 @@ public class PedidoService {
             throw new SecurityException(
                     "No puedes entregar pedidos de otro restaurante.");
         }
+        if (pedido.getEstado() == EstadoPedido.ENTREGADO) {
+            throw new IllegalStateException(
+                    "El pedido ya fue entregado y no puede modificarse.");
+        }
 
         if (pedido.getEstado() != EstadoPedido.LISTO) {
             throw new IllegalStateException(
