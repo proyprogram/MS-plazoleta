@@ -40,6 +40,6 @@ public class Restaurante {
     @Column(name = "urllogo")
     private String urlLogo;
 
-    @Column(name = "idpropietario", nullable = false)
+    @Column(name = "id_propietario", nullable = false)
     private Long idPropietario;
 }
