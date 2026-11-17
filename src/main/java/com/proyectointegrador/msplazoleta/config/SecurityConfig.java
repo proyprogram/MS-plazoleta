@@ -27,6 +27,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/restaurantes/*/propietario").hasAnyRole("PROPIETARIO", "ADMINISTRADOR")
                         .requestMatchers(HttpMethod.GET, "/api/restaurantes/**", "/api/platos/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/restaurantes").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.POST, "/api/empleados").hasRole("PROPIETARIO")
@@ -34,6 +36,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/platos/**").hasRole("PROPIETARIO")
                         .requestMatchers(HttpMethod.POST, "/api/pedidos").hasRole("CLIENTE")
                         .requestMatchers(HttpMethod.GET, "/api/pedidos").hasAnyRole("EMPLEADO", "PROPIETARIO")
+                        .requestMatchers(HttpMethod.PATCH, "/api/pedidos/*/cancelar").hasRole("CLIENTE")
+                        .requestMatchers(HttpMethod.PATCH, "/api/pedidos/**").hasRole("EMPLEADO")
+                        .requestMatchers(HttpMethod.GET, "/api/pedidos/*/trazabilidad").hasRole("CLIENTE")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(

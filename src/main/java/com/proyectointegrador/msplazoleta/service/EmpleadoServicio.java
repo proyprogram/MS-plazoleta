@@ -37,7 +37,7 @@ public class EmpleadoServicio {
         Long idPropietarioToken = jwtService.extractIdUsuario(token);
 
         if (idPropietarioToken == null || !restaurante.getIdPropietario().equals(idPropietarioToken)) {
-            throw new IllegalStateException("Solo el propietario del restaurante puede crear empleados");
+            throw new SecurityException("Solo el propietario del restaurante puede crear empleados");
         }
 
 

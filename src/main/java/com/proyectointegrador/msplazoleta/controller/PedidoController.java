@@ -1,16 +1,20 @@
 package com.proyectointegrador.msplazoleta.controller;
 
-import com.proyectointegrador.msplazoleta.entity.Pedido;
+import com.proyectointegrador.msplazoleta.dto.request.CrearPedidoRequest;
 import com.proyectointegrador.msplazoleta.entity.EstadoPedido;
+import com.proyectointegrador.msplazoleta.entity.Pedido;
 import com.proyectointegrador.msplazoleta.security.JwtService;
 import com.proyectointegrador.msplazoleta.service.PedidoService;
+import com.proyectointegrador.msplazoleta.entity.Restaurante;
+import com.proyectointegrador.msplazoleta.repository.RestauranteRepository;
+
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -19,25 +23,64 @@ public class PedidoController {
 
     private final PedidoService pedidoService;
     private final JwtService jwtService;
+    private final RestauranteRepository restauranteRepository;
 
-    public PedidoController(PedidoService pedidoService, JwtService jwtService) {
+    public PedidoController(
+            PedidoService pedidoService,
+            JwtService jwtService,
+            RestauranteRepository restauranteRepository) {
         this.pedidoService = pedidoService;
         this.jwtService = jwtService;
+        this.restauranteRepository = restauranteRepository;
     }
 
     @PostMapping
-    public ResponseEntity<?> crearPedido(@RequestBody Map<String, Object> datos) {
-        try {
-            Long idCliente = ((Number) datos.get("idCliente")).longValue();
-            Long idRestaurante = ((Number) datos.get("idRestaurante")).longValue();
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> platos = (List<Map<String, Object>>) datos.get("platos");
+    public ResponseEntity<?> crearPedido(
+            @Valid @RequestBody CrearPedidoRequest request,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
 
-            Pedido pedido = pedidoService.crearPedido(idCliente, idRestaurante, platos);
-            return new ResponseEntity<>(pedido, HttpStatus.CREATED);
-        } catch (IllegalStateException | IllegalArgumentException error) {
-            return new ResponseEntity<>(error.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+        String token = authorization.replace("Bearer ", "");
+        Long idCliente = jwtService.extractIdUsuario(token);
+
+        Pedido pedido = pedidoService.crearPedido(
+                idCliente,
+                request.getIdRestaurante(),
+                request.getPlatos()
+        );
+
+        return new ResponseEntity<>(pedido, HttpStatus.CREATED);
+    }
+
+    @PatchMapping("/{id}/asignar")
+    public ResponseEntity<?> asignarPedido(
+            @PathVariable Long id,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+
+        String token = authorization.replace("Bearer ", "");
+        Long idEmpleado = jwtService.extractIdUsuario(token);
+        Long idRestauranteEmpleado =
+                jwtService.extractIdRestaurante(token);
+
+        Pedido pedido = pedidoService.asignarPedido(
+                id,
+                idEmpleado,
+                idRestauranteEmpleado
+        );
+
+        return ResponseEntity.ok(pedido);
+    }
+
+    // HU16: el cliente cancela su pedido (solo si esta pendiente).
+    @PatchMapping("/{idPedido}/cancelar")
+    public ResponseEntity<?> cancelarPedido(
+            @PathVariable Long idPedido,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+
+        String token = authorization.replace("Bearer ", "");
+        Long idCliente = jwtService.extractIdUsuario(token);
+
+        return ResponseEntity.ok(
+                pedidoService.cancelarPedido(idPedido, idCliente));
     }
 
     @GetMapping
@@ -52,16 +95,127 @@ public class PedidoController {
         String rol = jwtService.extractRol(token);
 
         if ("EMPLEADO".equals(rol)) {
-            Long idRestauranteEmpleado = jwtService.extractIdRestaurante(token);
-            if (idRestauranteEmpleado == null || !idRestauranteEmpleado.equals(idRestaurante)) {
-                return new ResponseEntity<>(
-                        "Solo puedes consultar los pedidos del restaurante al que perteneces",
-                        HttpStatus.FORBIDDEN
+            Long idRestauranteEmpleado =
+                    jwtService.extractIdRestaurante(token);
+
+            if (idRestauranteEmpleado == null
+                    || !idRestauranteEmpleado.equals(idRestaurante)) {
+                throw new SecurityException(
+                        "Solo puedes consultar los pedidos del restaurante al que perteneces."
+                );
+            }
+        } else if ("PROPIETARIO".equals(rol)) {
+            Long idPropietarioToken = jwtService.extractIdUsuario(token);
+            Restaurante restaurante = restauranteRepository.findById(idRestaurante)
+                    .orElseThrow(() -> new IllegalArgumentException("El restaurante indicado no existe"));
+
+            if (!restaurante.getIdPropietario().equals(idPropietarioToken)) {
+                throw new SecurityException(
+                        "Solo puedes consultar los pedidos de tu propio restaurante."
                 );
             }
         }
 
-        Page<Pedido> pedidos = pedidoService.listarPedidosPorRestauranteYEstado(idRestaurante, estado, pagina, cantidad);
+        Page<Pedido> pedidos =
+                pedidoService.listarPedidosPorRestauranteYEstado(
+                        idRestaurante,
+                        estado,
+                        pagina,
+                        cantidad
+                );
+
         return ResponseEntity.ok(pedidos);
+    }
+
+    // HU17: el cliente consulta la trazabilidad de su pedido.
+    @GetMapping("/{idPedido}/trazabilidad")
+    public ResponseEntity<?> consultarTrazabilidad(
+            @PathVariable Long idPedido,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+
+        String token = authorization.replace("Bearer ", "");
+        Long idCliente = jwtService.extractIdUsuario(token);
+
+        return ResponseEntity.ok(
+                pedidoService.consultarTrazabilidad(idPedido, idCliente));
+    }
+
+    @PatchMapping("/{id}/listo")
+    public ResponseEntity<?> marcarPedidoListo(
+            @PathVariable Long id,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+
+        String token = authorization.replace("Bearer ", "");
+        String rol = jwtService.extractRol(token);
+
+        if (!"EMPLEADO".equals(rol)) {
+            throw new SecurityException(
+                    "Solo un empleado puede marcar el pedido como listo."
+            );
+        }
+
+        Long idRestauranteEmpleado =
+                jwtService.extractIdRestaurante(token);
+
+        if (idRestauranteEmpleado == null) {
+            throw new SecurityException(
+                    "El empleado no tiene un restaurante asociado."
+            );
+        }
+
+        Long idEmpleado = jwtService.extractIdUsuario(token);
+
+        // La notificacion SMS ahora la dispara el NotificacionObserver dentro
+        // de PedidoService, automaticamente al cambiar el estado a LISTO.
+        Pedido pedido = pedidoService.marcarPedidoListo(
+                id,
+                idRestauranteEmpleado,
+                idEmpleado,
+                authorization
+        );
+
+        return ResponseEntity.ok(pedido);
+    }
+
+    // HU15: el empleado entrega un pedido ingresando el PIN de seguridad.
+    @PatchMapping("/{id}/entregar")
+    public ResponseEntity<?> entregarPedido(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> datos,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+
+        String token = authorization.replace("Bearer ", "");
+        String rol = jwtService.extractRol(token);
+
+        if (!"EMPLEADO".equals(rol)) {
+            throw new SecurityException(
+                    "Solo un empleado puede entregar pedidos.");
+        }
+
+        Long idRestauranteEmpleado =
+                jwtService.extractIdRestaurante(token);
+
+        if (idRestauranteEmpleado == null) {
+            throw new SecurityException(
+                    "El empleado no tiene un restaurante asociado.");
+        }
+
+        String pin = datos.get("pin");
+
+        if (pin == null || pin.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Debes ingresar el PIN de seguridad.");
+        }
+
+        Long idEmpleado = jwtService.extractIdUsuario(token);
+
+        Pedido pedido = pedidoService.entregarPedido(
+                id,
+                idRestauranteEmpleado,
+                idEmpleado,
+                pin
+        );
+
+        return ResponseEntity.ok(pedido);
     }
 }

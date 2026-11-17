@@ -1,0 +1,146 @@
+package com.proyectointegrador.msplazoleta.exception;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(PedidoNoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> manejarPedidoNoEncontrado(
+            PedidoNoEncontradoException error) {
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of(
+                        "fecha", LocalDateTime.now().toString(),
+                        "estado", HttpStatus.NOT_FOUND.value(),
+                        "error", "No encontrado",
+                        "mensaje", error.getMessage()
+                ));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> manejarValidacion(
+            MethodArgumentNotValidException error) {
+
+        String mensaje = error.getBindingResult().getFieldErrors().stream()
+                .map(FieldError::getDefaultMessage)
+                .collect(Collectors.joining(", "));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                        "fecha", LocalDateTime.now().toString(),
+                        "estado", HttpStatus.BAD_REQUEST.value(),
+                        "error", "Solicitud incorrecta",
+                        "mensaje", mensaje
+                ));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> manejarArgumentoInvalido(
+            IllegalArgumentException error) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                        "fecha", LocalDateTime.now().toString(),
+                        "estado", HttpStatus.BAD_REQUEST.value(),
+                        "error", "Solicitud incorrecta",
+                        "mensaje", error.getMessage()
+                ));
+    }
+
+    @ExceptionHandler(SecurityException.class)
+    public ResponseEntity<Map<String, Object>> manejarAccesoDenegado(
+            SecurityException error) {
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of(
+                        "fecha", LocalDateTime.now().toString(),
+                        "estado", HttpStatus.FORBIDDEN.value(),
+                        "error", "Acceso denegado",
+                        "mensaje", error.getMessage()
+                ));
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, Object>> manejarEstadoInvalido(
+            IllegalStateException error) {
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of(
+                        "fecha", LocalDateTime.now().toString(),
+                        "estado", HttpStatus.CONFLICT.value(),
+                        "error", "Conflicto",
+                        "mensaje", error.getMessage()
+                ));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> manejarCuerpoInvalido(
+            HttpMessageNotReadableException error) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                        "fecha", LocalDateTime.now().toString(),
+                        "estado", HttpStatus.BAD_REQUEST.value(),
+                        "error", "Solicitud incorrecta",
+                        "mensaje", "El cuerpo de la petición no es válido. Revisa los tipos de datos (el precio debe ser un número entero)."
+                ));
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<Map<String, Object>> manejarParametroFaltante(
+            MissingServletRequestParameterException error) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                        "fecha", LocalDateTime.now().toString(),
+                        "estado", HttpStatus.BAD_REQUEST.value(),
+                        "error", "Solicitud incorrecta",
+                        "mensaje", "Falta el parámetro obligatorio: " + error.getParameterName()
+                ));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> manejarTipoParametroInvalido(
+            MethodArgumentTypeMismatchException error) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                        "fecha", LocalDateTime.now().toString(),
+                        "estado", HttpStatus.BAD_REQUEST.value(),
+                        "error", "Solicitud incorrecta",
+                        "mensaje", "El valor del parámetro '" + error.getName() + "' no es válido."
+                ));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> manejarErrorGeneral(
+            Exception error) {
+
+        log.error("Error interno no controlado", error);
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                        "fecha", LocalDateTime.now().toString(),
+                        "estado", HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        "error", "Error interno del servidor",
+                        "mensaje", "Ocurrió un error interno en el servidor."
+                ));
+    }
+}

@@ -30,7 +30,9 @@ public class CrearPlatoRequest {
     @Positive
     private Long idRestaurante;
 
-    @NotNull(message = "El id del propietario es obligatorio")
-    @Positive
+    /**
+     * Se mantiene por compatibilidad, pero se ignora: el id del propietario
+     * siempre se toma del token JWT, nunca del body.
+     */
     private Long idPropietario;
 }
